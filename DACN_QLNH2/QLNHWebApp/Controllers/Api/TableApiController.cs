@@ -161,6 +161,16 @@ namespace QLNHWebApp.Controllers.Api
         {
             try
             {
+                // DEBUG: Log incoming request
+                Console.WriteLine($"📝 BookTable API called:");
+                Console.WriteLine($"   - TableId: {request.TableId}");
+                Console.WriteLine($"   - Customer: {request.CustomerName}");
+                Console.WriteLine($"   - Phone: {request.Phone}");
+                Console.WriteLine($"   - Date: {request.BookingDate}");
+                Console.WriteLine($"   - Time: {request.BookingTime}");
+                Console.WriteLine($"   - Guests: {request.Guests}");
+                Console.WriteLine($"   - Items count: {request.OrderItems?.Count ?? 0}");
+                
                 // Kiểm tra bàn có tồn tại và còn trống không
                 var table = await _context.Tables.FindAsync(request.TableId);
                 if (table == null)
@@ -196,6 +206,8 @@ namespace QLNHWebApp.Controllers.Api
 
                 _context.TableBookings.Add(booking);
                 await _context.SaveChangesAsync();
+                
+                Console.WriteLine($"✅ Booking saved! ID: {booking.Id}, Status: {booking.Status}");
 
                 // Thêm món ăn vào booking nếu có
                 if (request.OrderItems != null && request.OrderItems.Any())

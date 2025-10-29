@@ -236,6 +236,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
       }
 
       const bookingResult = await bookingResponse.json();
+      console.log('✅ BookTable API response:', bookingResult);
 
       if (cartItems.length > 0) {
         // Create order with items and link to table booking
