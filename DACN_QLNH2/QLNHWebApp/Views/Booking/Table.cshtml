@@ -1,0 +1,155 @@
+@{
+    ViewData["Title"] = "Đặt bàn";
+    var bookingInfo = ViewBag.BookingInfo as QLNHWebApp.Controllers.BookingInfo;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-calendar-alt"></i> Đặt bàn</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                        </div>
+                    }
+
+                    @if (bookingInfo != null)
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Thông tin đặt bàn đã được lưu tạm thời
+                        </div>
+                    }
+
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="customerName" class="form-label">Tên khách hàng *</label>
+                                    <input type="text" class="form-control" id="customerName" name="customerName"
+                                        value="@(bookingInfo?.CustomerName ?? "")" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="phone" class="form-label">Số điện thoại *</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone"
+                                        value="@(bookingInfo?.Phone ?? "")" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="date" class="form-label">Ngày đặt *</label>
+                                    <input type="date" class="form-control" id="date" name="date"
+                                        value="@(bookingInfo?.Date ?? "")" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="time" class="form-label">Giờ đặt *</label>
+                                    <input type="time" class="form-control" id="time" name="time"
+                                        value="@(bookingInfo?.Time ?? "")" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="guests" class="form-label">Số người</label>
+                                    <select class="form-control" id="guests" name="guests">
+                                        @{
+                                            var selectedGuests = bookingInfo?.Guests ?? 2;
+                                        }
+                                        <option value="1" selected="@(selectedGuests == 1)">1 người</option>
+                                        <option value="2" selected="@(selectedGuests == 2)">2 người</option>
+                                        <option value="3" selected="@(selectedGuests == 3)">3 người</option>
+                                        <option value="4" selected="@(selectedGuests == 4)">4 người</option>
+                                        <option value="5" selected="@(selectedGuests == 5)">5 người</option>
+                                        <option value="6" selected="@(selectedGuests == 6)">6 người</option>
+                                        <option value="7" selected="@(selectedGuests == 7)">7 người</option>
+                                        <option value="8" selected="@(selectedGuests == 8)">8 người</option>
+                                        <option value="10" selected="@(selectedGuests == 10)">10+ người</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="note" class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="note" name="note" rows="3"
+                                placeholder="Yêu cầu đặc biệt, dị ứng thực phẩm...">@(bookingInfo?.Note ?? "")</textarea>
+                        </div>
+
+                        <!-- Nút chọn bàn -->
+                        <div class="form-group mb-4"
+                            style="border: 3px solid #28a745; padding: 25px; border-radius: 15px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                            <label class="form-label" style="font-weight: bold; color: #28a745; font-size: 18px;">🎯
+                                Chọn bàn phù hợp</label>
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-success btn-lg" onclick="selectTable()"
+                                    style="font-size: 20px; padding: 20px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                                    <i class="fas fa-table me-2"></i>
+                                    🎯 Chọn bàn phù hợp
+                                </button>
+                            </div>
+                            <small class="form-text text-muted" style="font-size: 14px; margin-top: 10px;">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Chọn bàn phù hợp với số lượng khách và thời gian đặt bàn
+                            </small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("Index", "Menu")" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại menu
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Xác nhận đặt bàn
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set minimum date to today
+    document.getElementById('date').min = new Date().toISOString().split('T')[0];
+
+    function selectTable() {
+        console.log('selectTable function called!');
+        var guests = document.getElementById('guests').value;
+        var date = document.getElementById('date').value;
+        var time = document.getElementById('time').value;
+
+        console.log('Guests:', guests, 'Date:', date, 'Time:', time);
+
+        if (!guests || !date || !time) {
+            alert('Vui lòng điền đầy đủ thông tin số khách, ngày và giờ trước khi chọn bàn!');
+            return;
+        }
+
+        // Chuyển đến trang chọn tầng
+        var url = '@Url.Action("SelectFloor", "Table")?guests=' + guests + '&bookingDate=' + date + '&bookingTime=' + time;
+        console.log('Redirecting to:', url);
+        window.location.href = url;
+    }
+
+    // Debug: Check if button exists
+    document.addEventListener('DOMContentLoaded', function () {
+        var selectTableBtn = document.querySelector('button[onclick="selectTable()"]');
+        if (selectTableBtn) {
+            console.log('✅ Select table button found!');
+            selectTableBtn.style.display = 'block';
+            selectTableBtn.style.visibility = 'visible';
+        } else {
+            console.log('❌ Select table button NOT found!');
+        }
+    });
+</script>

@@ -1,0 +1,221 @@
+@model IEnumerable<QLNHWebApp.Models.MenuItem>
+@{
+    ViewData["Title"] = "Quản lý Thực đơn";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="fas fa-utensils me-2"></i>
+        Quản lý Thực đơn
+    </h2>
+    <div>
+        <form asp-controller="AdminMenu" asp-action="UpdateDetailedDescriptions" method="post" class="d-inline">
+            <button type="submit" class="btn btn-success me-2"
+                onclick="return confirm('Bạn có chắc muốn cập nhật mô tả chi tiết cho tất cả món ăn?')">
+                <i class="fas fa-sync-alt me-1"></i>
+                Cập nhật mô tả chi tiết
+            </button>
+        </form>
+        <a asp-controller="AdminMenu" asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>
+            Thêm món mới
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="searchString" class="form-label">Tìm kiếm</label>
+                <input type="text" class="form-control" id="searchString" name="searchString"
+                    value="@ViewData["CurrentFilter"]" placeholder="Tìm kiếm món ăn">
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">Danh mục</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">Tất cả danh mục</option>
+                    <option value="Khai vị" selected="@(ViewData["CategoryFilter"]?.ToString() == "Khai vị")">Khai vị
+                    </option>
+                    <option value="Món chính" selected="@(ViewData["CategoryFilter"]?.ToString() == "Món chính")">Món
+                        chính</option>
+                    <option value="Tráng miệng" selected="@(ViewData["CategoryFilter"]?.ToString() == "Tráng miệng")">
+                        Tráng miệng</option>
+                    <option value="Đồ uống" selected="@(ViewData["CategoryFilter"]?.ToString() == "Đồ uống")">Đồ
+                        uống</option>
+                    <option value="Món lẩu" selected="@(ViewData["CategoryFilter"]?.ToString() == "Món lẩu")">Món lẩu
+                    </option>
+                    <option value="Món nướng" selected="@(ViewData["CategoryFilter"]?.ToString() == "Món nướng")">Món
+                        nướng</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>
+                        Tìm kiếm
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Menu Items Grid -->
+<div class="row">
+    @if (Model.Any())
+    {
+        @foreach (var item in Model)
+        {
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="position-relative">
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name"
+                                style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light"
+                                style="height: 200px;">
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-image fa-3x mb-2"></i>
+                                    <p class="mb-0">Chưa có ảnh</p>
+                                </div>
+                            </div>
+                        }
+                        <span class="badge bg-primary position-absolute top-0 start-0 m-2">@item.Category</span>
+                        <span class="badge bg-success position-absolute top-0 end-0 m-2">@item.Price.ToString("C0", new
+                                                System.Globalization.CultureInfo("vi-VN"))</span>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">@item.Name</h5>
+                <p class="card-text flex-grow-1">@item.Description</p>
+                <div class="btn-group mt-auto" role="group">
+                    <a asp-controller="AdminMenu" asp-action="Details" asp-route-id="@item.Id"
+                        class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a asp-controller="AdminMenu" asp-action="Edit" asp-route-id="@item.Id"
+                        class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a asp-controller="AdminMenu" asp-action="Delete" asp-route-id="@item.Id"
+                        class="btn btn-outline-danger btn-sm"
+                        onclick="return confirm('Bạn có chắc chắn muốn xóa món ăn &quot;@item.Name&quot;? Hành động này không thể hoàn tác!')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                    <h5>Chưa có món ăn nào</h5>
+                    <p class="text-muted">Hãy thêm món ăn đầu tiên cho thực đơn của bạn!</p>
+                    <a asp-controller="AdminMenu" asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>
+                        Thêm món mới
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Statistics -->
+<div class="mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-white-75">Tổng món ăn</h6>
+                            <h4 class="mb-0">@Model.Count()</h4>
+                        </div>
+                        <div>
+                            <i class="fas fa-utensils fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-white-75">Danh mục</h6>
+                            <h4 class="mb-0">@Model.Select(m => m.Category).Distinct().Count()</h4>
+                        </div>
+                        <div>
+                            <i class="fas fa-list fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-white-75">Giá trung bình</h6>
+                            <h4 class="mb-0">@(Model.Any() ? Model.Average(m => m.Price).ToString("C0", new
+                                                                System.Globalization.CultureInfo("vi-VN")) : "0đ")</h4>
+                        </div>
+                        <div>
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-white-75">Món đắt nhất</h6>
+                            <h4 class="mb-0">@(Model.Any() ? Model.Max(m => m.Price).ToString("C0", new
+                                                                System.Globalization.CultureInfo("vi-VN")) : "0đ")</h4>
+                        </div>
+                        <div>
+                            <i class="fas fa-crown fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-submit search on Enter key
+    document.getElementById('searchString').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.querySelector('form').submit();
+        }
+    });
+</script>

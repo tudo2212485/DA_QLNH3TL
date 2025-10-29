@@ -1,0 +1,838 @@
+@model IEnumerable<QLNHWebApp.Models.TableBooking>
+@{
+    ViewData["Title"] = "Quản lý Đặt bàn";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card.success {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+
+    .stat-card.warning {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+        color: white;
+    }
+
+    .stat-card.info {
+        background: linear-gradient(135deg, #17a2b8, #6f42c1);
+        color: white;
+    }
+
+    .stat-card:not(.success):not(.warning):not(.info) {
+        background: linear-gradient(135deg, #6c757d, #495057);
+        color: white;
+    }
+
+    .booking-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .booking-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .action-btn {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 10px;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        margin: 0 2px;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .action-btn.view:hover {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .action-btn.edit:hover {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+
+    .action-btn.delete:hover {
+        background: #ffebee;
+        color: #d32f2f;
+    }
+</style>
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">Quản lý Đặt bàn</h1>
+        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal"
+            data-bs-target="#walkInBookingModal">
+            <i class="fas fa-user-plus me-2"></i>Đặt bàn trực tiếp
+        </button>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1" style="opacity: 0.8;">TỔNG ĐẶT BÀN
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold">@ViewBag.TotalBookings</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-table fa-2x" style="opacity: 0.8;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card success h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1" style="opacity: 0.8;">HÔM NAY
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold">@ViewBag.TodayBookings</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-day fa-2x" style="opacity: 0.8;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card warning h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1" style="opacity: 0.8;">CHỜ XÁC NHẬN
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold">@ViewBag.PendingBookings</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hourglass-half fa-2x" style="opacity: 0.8;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card info h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1" style="opacity: 0.8;">ĐÃ XÁC NHẬN
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold">@ViewBag.ConfirmedBookings</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x" style="opacity: 0.8;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Trạng thái</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="Pending" selected="@(ViewData["StatusFilter"]?.ToString() == "Pending")">Chờ xác
+                            nhận</option>
+                        <option value="Confirmed" selected="@(ViewData["StatusFilter"]?.ToString() == "Confirmed")">Đã
+                            xác nhận</option>
+                        <option value="Cancelled" selected="@(ViewData["StatusFilter"]?.ToString() == "Cancelled")">Đã
+                            hủy</option>
+                        <option value="Completed" selected="@(ViewData["StatusFilter"]?.ToString() == "Completed")">Hoàn
+                            thành</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Tìm kiếm</label>
+                    <input type="text" class="form-control" id="search" name="search" value="@ViewData["SearchFilter"]"
+                        placeholder="Tên khách hàng, SĐT...">
+                </div>
+                <div class="col-md-3">
+                    <label for="date" class="form-label">Ngày</label>
+                    <input type="date" class="form-control" id="date" name="date" value="@ViewData["DateFilter"]">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>
+                            Lọc
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                            <i class="fas fa-refresh me-1"></i>
+                            Làm mới
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bookings List -->
+    <div class="row">
+        @if (Model.Any())
+        {
+            @foreach (var booking in Model)
+            {
+                <div class="col-lg-6 col-xl-4">
+                    <div class="card booking-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h6 class="card-title mb-1">@booking.CustomerName</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-phone me-1"></i>@booking.Phone
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    @switch (booking.Status)
+                                    {
+                                        case "Pending":
+                                            <span class="status-badge bg-warning text-dark">
+                                                <i class="fas fa-hourglass-half me-1"></i>Chờ xác nhận
+                                            </span>
+                                            break;
+                                        case "Confirmed":
+                                            <span class="status-badge bg-success text-white">
+                                                <i class="fas fa-check-circle me-1"></i>Đã xác nhận
+                                            </span>
+                                            break;
+                                        case "Cancelled":
+                                            <span class="status-badge bg-danger text-white">
+                                                <i class="fas fa-times-circle me-1"></i>Đã hủy
+                                            </span>
+                                            break;
+                                        case "Completed":
+                                            <span class="status-badge bg-info text-white">
+                                                <i class="fas fa-check me-1"></i>Hoàn thành
+                                            </span>
+                                            break;
+                                        default:
+                                            <span class="status-badge bg-secondary text-white">@booking.Status</span>
+                                            break;
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-table text-primary me-2"></i>
+                                        <div>
+                                            <small class="text-muted">Bàn</small>
+                                            <div class="fw-medium">@booking.Table.Name</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-users text-success me-2"></i>
+                                        <div>
+                                            <small class="text-muted">Số khách</small>
+                                            <div class="fw-medium">@booking.Guests người</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-calendar text-info me-2"></i>
+                                        <div>
+                                            <small class="text-muted">Ngày</small>
+                                            <div class="fw-medium">@booking.BookingDate.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-clock text-warning me-2"></i>
+                                        <div>
+                                            <small class="text-muted">Giờ</small>
+                                            <div class="fw-medium">@booking.BookingTime</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(booking.Note))
+                            {
+                                <div class="mb-3">
+                                    <small class="text-muted">Ghi chú:</small>
+                                    <div class="small text-muted">@booking.Note</div>
+                                </div>
+                            }
+
+                            <!-- Quick Actions cho Pending bookings -->
+                            @if (booking.Status == "Pending")
+                            {
+                                <div class="d-flex gap-2 mb-3">
+                                    <button type="button" class="btn btn-success btn-sm flex-fill"
+                                        onclick="confirmBooking(@booking.Id)">
+                                        <i class="fas fa-check me-1"></i>Xác nhận
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm flex-fill"
+                                        onclick="rejectBooking(@booking.Id)">
+                                        <i class="fas fa-times me-1"></i>Từ chối
+                                    </button>
+                                </div>
+                            }
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-building me-1"></i>@booking.Table.Floor
+                                </small>
+                                <div class="d-flex gap-1">
+                                    <a href="@Url.Action("Details", new { id = booking.Id })" class="action-btn view"
+                                        title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="@Url.Action("Edit", new { id = booking.Id })" class="action-btn edit"
+                                        title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" action="@Url.Action("Delete")" class="d-inline"
+                                        onsubmit="return confirm('Bạn có chắc chắn muốn xóa đặt bàn này?')">
+                                        <input type="hidden" name="id" value="@booking.Id">
+                                        <button type="submit" class="action-btn delete" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-table fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Không có đặt bàn nào</h5>
+                    <p class="text-muted">Chưa có đặt bàn nào được tạo hoặc không tìm thấy kết quả phù hợp.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Walk-in Booking Modal -->
+<div class="modal fade" id="walkInBookingModal" tabindex="-1" aria-labelledby="walkInBookingModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="walkInBookingModalLabel">
+                    <i class="fas fa-user-plus me-2"></i>Đặt bàn trực tiếp
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="walkInBookingForm">
+                    <!-- Step 1: Thông tin khách hàng -->
+                    <div class="step step-1">
+                        <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-user me-2"></i>Thông tin khách hàng</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="customerName" class="form-label">Tên khách hàng <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="customerName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="customerPhone" class="form-label">Số điện thoại <span
+                                        class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="customerPhone" required pattern="[0-9]{10}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="guests" class="form-label">Số khách <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="guests" min="1" max="20" value="2"
+                                    required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="note" class="form-label">Ghi chú</label>
+                                <input type="text" class="form-control" id="note" placeholder="Ghi chú thêm...">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-primary" onclick="showTableSelection()">
+                                <i class="fas fa-arrow-right me-2"></i>Tiếp theo: Chọn bàn
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Chọn bàn -->
+                    <div class="step step-2" style="display: none;">
+                        <h6 class="border-bottom pb-2 mb-3">
+                            <i class="fas fa-table me-2"></i>Chọn bàn phù hợp
+                            <button type="button" class="btn btn-sm btn-outline-secondary float-end"
+                                onclick="backToCustomerInfo()">
+                                <i class="fas fa-arrow-left me-1"></i>Quay lại
+                            </button>
+                        </h6>
+
+                        <!-- Loading -->
+                        <div id="tableLoading" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Đang tải danh sách bàn...</p>
+                        </div>
+
+                        <!-- Tables Grid -->
+                        <div id="tablesGrid" style="display: none;">
+                            <!-- Floor Tabs -->
+                            <ul class="nav nav-pills mb-3" id="floorTabs" role="tablist"></ul>
+
+                            <!-- Table Cards -->
+                            <div class="tab-content" id="floorTabContent"></div>
+                        </div>
+
+                        <div class="mt-4" id="confirmBookingBtn" style="display: none;">
+                            <button type="button" class="btn btn-success btn-lg" onclick="createWalkInBooking()">
+                                <i class="fas fa-check me-2"></i>Xác nhận đặt bàn
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert2 for beautiful alerts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Xác nhận booking
+    function confirmBooking(bookingId) {
+        Swal.fire({
+            title: 'Xác nhận đặt bàn?',
+            text: 'Bạn có chắc chắn muốn xác nhận đặt bàn này?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-check me-1"></i>Xác nhận',
+            cancelButtonText: '<i class="fas fa-times me-1"></i>Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Send request
+                fetch('@Url.Action("Confirm", "AdminBooking")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: bookingId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công!',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi!',
+                                text: data.message
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: 'Có lỗi xảy ra khi xác nhận đặt bàn.'
+                        });
+                    });
+            }
+        });
+    }
+
+    // Từ chối booking
+    function rejectBooking(bookingId) {
+        Swal.fire({
+            title: 'Từ chối đặt bàn?',
+            text: 'Nhập lý do từ chối (tùy chọn):',
+            icon: 'warning',
+            input: 'textarea',
+            inputPlaceholder: 'Lý do từ chối...',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-times me-1"></i>Từ chối',
+            cancelButtonText: '<i class="fas fa-arrow-left me-1"></i>Quay lại'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Send request
+                fetch('@Url.Action("Reject", "AdminBooking")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: bookingId,
+                        reason: result.value || ''
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Đã từ chối!',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi!',
+                                text: data.message
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: 'Có lỗi xảy ra khi từ chối đặt bàn.'
+                        });
+                    });
+            }
+        });
+    }
+
+    // Auto dismiss alerts after 5 seconds
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+
+    // ===== WALK-IN BOOKING FUNCTIONS =====
+    let selectedTableId = null;
+    let availableTables = [];
+
+    // Show table selection step
+    function showTableSelection() {
+        const name = document.getElementById('customerName').value.trim();
+        const phone = document.getElementById('customerPhone').value.trim();
+        const guests = document.getElementById('guests').value;
+
+        if (!name || !phone || !guests) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Thiếu thông tin!',
+                text: 'Vui lòng điền đầy đủ thông tin khách hàng.'
+            });
+            return;
+        }
+
+        // Validate phone
+        if (!/^[0-9]{10}$/.test(phone)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Số điện thoại không hợp lệ!',
+                text: 'Vui lòng nhập số điện thoại 10 chữ số.'
+            });
+            return;
+        }
+
+        // Hide step 1, show step 2
+        document.querySelector('.step-1').style.display = 'none';
+        document.querySelector('.step-2').style.display = 'block';
+
+        // Load available tables
+        loadAvailableTables();
+    }
+
+    // Back to customer info
+    function backToCustomerInfo() {
+        document.querySelector('.step-1').style.display = 'block';
+        document.querySelector('.step-2').style.display = 'none';
+        selectedTableId = null;
+    }
+
+    // Load available tables
+    function loadAvailableTables() {
+        document.getElementById('tableLoading').style.display = 'block';
+        document.getElementById('tablesGrid').style.display = 'none';
+
+        const guests = document.getElementById('guests').value;
+
+        fetch(`/api/tableapi/GetAvailableTables?guests=${guests}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    availableTables = data;
+                    renderTables(data);
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Không có bàn trống',
+                        text: `Không có bàn nào phù hợp với ${guests} khách hoặc tất cả bàn đã bị đặt.`
+                    });
+                    backToCustomerInfo();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Không thể tải danh sách bàn.'
+                });
+                backToCustomerInfo();
+            });
+    }
+
+    // Render tables by floor
+    function renderTables(tables) {
+        const floorTabs = document.getElementById('floorTabs');
+        const floorTabContent = document.getElementById('floorTabContent');
+
+        // Group tables by floor
+        const tablesByFloor = tables.reduce((acc, table) => {
+            if (!acc[table.floor]) acc[table.floor] = [];
+            acc[table.floor].push(table);
+            return acc;
+        }, {});
+
+        // Clear previous content
+        floorTabs.innerHTML = '';
+        floorTabContent.innerHTML = '';
+
+        let firstFloor = true;
+        for (const [floor, floorTables] of Object.entries(tablesByFloor)) {
+            // Create tab
+            const tabId = `floor-${floor.replace(/\s+/g, '-')}`;
+            const tab = document.createElement('li');
+            tab.className = 'nav-item';
+            tab.innerHTML = `
+                <button class="nav-link ${firstFloor ? 'active' : ''}" 
+                        id="${tabId}-tab" 
+                        data-bs-toggle="pill" 
+                        data-bs-target="#${tabId}" 
+                        type="button">
+                    <i class="fas fa-building me-1"></i>${floor}
+                </button>`;
+            floorTabs.appendChild(tab);
+
+            // Create tab content
+            const tabPane = document.createElement('div');
+            tabPane.className = `tab-pane fade ${firstFloor ? 'show active' : ''}`;
+            tabPane.id = tabId;
+            tabPane.innerHTML = `
+                <div class="row g-3">
+                    ${floorTables.map(table => `
+                        <div class="col-md-3">
+                            <div class="card table-select-card" onclick="selectTable(${table.id})" 
+                                 id="table-card-${table.id}" 
+                                 style="cursor: pointer; border: 2px solid #dee2e6; transition: all 0.3s;">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-table fa-2x text-primary mb-2"></i>
+                                    <h6 class="card-title">${table.name}</h6>
+                                    <p class="card-text small text-muted">
+                                        <i class="fas fa-users me-1"></i>${table.capacity} người
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+            floorTabContent.appendChild(tabPane);
+
+            firstFloor = false;
+        }
+
+        document.getElementById('tableLoading').style.display = 'none';
+        document.getElementById('tablesGrid').style.display = 'block';
+    }
+
+    // Select table
+    function selectTable(tableId) {
+        selectedTableId = tableId;
+
+        // Remove selection from all cards
+        document.querySelectorAll('.table-select-card').forEach(card => {
+            card.style.border = '2px solid #dee2e6';
+            card.style.backgroundColor = 'white';
+        });
+
+        // Highlight selected card
+        const selectedCard = document.getElementById(`table-card-${tableId}`);
+        selectedCard.style.border = '2px solid #28a745';
+        selectedCard.style.backgroundColor = '#f0fff4';
+
+        // Show confirm button
+        document.getElementById('confirmBookingBtn').style.display = 'block';
+    }
+
+    // Create walk-in booking
+    function createWalkInBooking() {
+        if (!selectedTableId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Chưa chọn bàn!',
+                text: 'Vui lòng chọn một bàn trước khi xác nhận.'
+            });
+            return;
+        }
+
+        const bookingData = {
+            customerName: document.getElementById('customerName').value.trim(),
+            phone: document.getElementById('customerPhone').value.trim(),
+            guests: parseInt(document.getElementById('guests').value),
+            tableId: selectedTableId,
+            note: document.getElementById('note').value.trim() || ''
+        };
+
+        // Show loading
+        Swal.fire({
+            title: 'Đang tạo đặt bàn...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Send request
+        fetch('@Url.Action("CreateWalkIn", "AdminBooking")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(bookingData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Close modal and reload
+                        bootstrap.Modal.getInstance(document.getElementById('walkInBookingModal')).hide();
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: data.message
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Có lỗi xảy ra khi tạo đặt bàn.'
+                });
+            });
+    }
+
+    // Reset modal when closed
+    document.getElementById('walkInBookingModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('walkInBookingForm').reset();
+        document.querySelector('.step-1').style.display = 'block';
+        document.querySelector('.step-2').style.display = 'none';
+        document.getElementById('confirmBookingBtn').style.display = 'none';
+        selectedTableId = null;
+    });
+</script>

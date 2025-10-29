@@ -1,0 +1,15 @@
+Thư mục này chứa các file ảnh món ăn.
+
+Để thêm ảnh:
+1. Đặt file ảnh (jpg, png, webp...) vào thư mục này
+2. Đặt tên file theo đúng tên trong database, ví dụ:
+   - goicuon.jpg
+   - boluclac.jpg  
+   - suonnuong.jpg
+   - lautai.jpg
+   - chekhucbach.jpg
+   - tradao.jpg
+
+3. Hoặc cập nhật đường dẫn ImageUrl trong database để khớp với tên file ảnh thực tế.
+
+Lưu ý: Tên file ảnh phải khớp với đường dẫn ImageUrl trong bảng MenuItems của database.

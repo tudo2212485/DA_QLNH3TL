@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Nhà Hàng 3TL</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            /* Bắt đầu từ dưới navbar */
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            width: var(--sidebar-width);
+            padding: 30px 0 0;
+            /* Tăng padding-top để có khoảng cách với navbar */
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            background: var(--primary-gradient);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .navbar-brand {
+            background: var(--primary-gradient);
+            color: white !important;
+            font-weight: bold;
+            padding: 1rem 1.5rem;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+            /* Đảm bảo navbar luôn ở trên cùng */
+        }
+
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+
+        .navbar-text {
+            color: white !important;
+            font-weight: 500;
+        }
+
+        .navbar .navbar-text,
+        .navbar .navbar-text i {
+            color: white !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar .btn-outline-light {
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            background-color: transparent !important;
+        }
+
+        .navbar .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border-color: white !important;
+        }
+
+        .btn-outline-light {
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            border-color: white !important;
+            color: white !important;
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.85);
+            padding: 0.875rem 1.5rem;
+            border-radius: 12px;
+            margin: 0.25rem 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: white;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            padding: 1.5rem;
+            padding-top: 6rem;
+            /* Thêm padding-top để tránh bị che bởi navbar */
+            min-height: 100vh;
+            margin-top: 60px;
+            /* Thêm margin-top để đảm bảo không bị che */
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .page-title-box {
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #f1f3f4;
+            margin-bottom: 2rem;
+        }
+
+        .page-title-box h4 {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+        }
+
+        .breadcrumb-item.active {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .btn {
+            border-radius: 10px;
+            font-weight: 500;
+            padding: 0.5rem 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .navbar-text {
+            font-weight: 500;
+            color: white !important;
+        }
+
+        /* Mobile Responsive */
+        @@media (max-width: 767.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+                top: 60px;
+                padding-top: 1rem;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            main {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .navbar-brand {
+                font-size: 1rem;
+            }
+        }
+
+        /* Animations */
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        /* Scrollbar Styling */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark fixed-top flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 mr-0 px-3" href="#">
+            <i class="bx bx-restaurant"></i> Nhà Hàng 3TL
+        </a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false"
+            aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-nav">
+            <div class="nav-item text-nowrap me-3">
+                <span class="navbar-text me-3">
+                    <i class="bx bx-user"></i> Xin chào, @ViewBag.FullName
+                </span>
+                <a class="btn btn-outline-light btn-sm" href="@Url.Action("Logout", "Auth")">
+                    <i class="bx bx-log-out"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="sidebar-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")"
+                                href="@Url.Action("Dashboard", "Admin")">
+                                <i class="bx bx-tachometer"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "OrderManagement" ? "active" : "")"
+                                href="@Url.Action("Index", "OrderManagement")">
+                                <i class="bx bx-receipt"></i>
+                                Hóa đơn
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminBooking" ? "active" : "")"
+                                href="@Url.Action("Index", "AdminBooking")">
+                                <i class="bx bx-calendar"></i>
+                                Đặt bàn
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminMenu" ? "active" : "")"
+                                href="@Url.Action("Index", "AdminMenu")">
+                                <i class="bx bx-food-menu"></i>
+                                Thực đơn
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Employees" ? "active" : "")"
+                                href="@Url.Action("Employees", "Admin")">
+                                <i class="bx bx-group"></i>
+                                Nhân viên
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminCustomer" ? "active" : "")"
+                                href="@Url.Action("Index", "AdminCustomer")">
+                                <i class="bx bx-user"></i>
+                                Khách hàng
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Settings" ? "active" : "")"
+                                href="@Url.Action("Index", "Settings")">
+                                <i class="bx bx-cog"></i>
+                                Thiết lập hệ thống
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

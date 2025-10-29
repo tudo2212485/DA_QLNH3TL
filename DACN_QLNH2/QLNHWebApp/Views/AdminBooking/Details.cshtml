@@ -1,0 +1,392 @@
+@model QLNHWebApp.Models.TableBooking
+@{
+    ViewData["Title"] = "Chi tiết Đặt bàn";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .detail-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        font-size: 1.125rem;
+        font-weight: 500;
+        color: #212529;
+    }
+
+    .status-badge-large {
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 25px;
+    }
+</style>
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Chi tiết Đặt bàn #@Model.Id</h1>
+        <div>
+            @if (Model.Status == "Pending")
+            {
+                <button class="btn btn-success me-2" onclick="confirmBooking(@Model.Id)">
+                    <i class="fas fa-check me-1"></i>Xác nhận
+                </button>
+                <button class="btn btn-danger me-2" onclick="rejectBooking(@Model.Id)">
+                    <i class="fas fa-times me-1"></i>Từ chối
+                </button>
+            }
+            <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-warning me-2">
+                <i class="fas fa-edit"></i> Chỉnh sửa
+            </a>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Thông tin khách hàng -->
+        <div class="col-lg-6 mb-4">
+            <div class="card detail-card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-user me-2"></i>Thông tin khách hàng
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="detail-label">Tên khách hàng</div>
+                        <div class="detail-value">@Model.CustomerName</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="detail-label">Số điện thoại</div>
+                        <div class="detail-value">
+                            <i class="fas fa-phone text-success me-2"></i>@Model.Phone
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="detail-label">Số khách</div>
+                        <div class="detail-value">
+                            <i class="fas fa-users text-info me-2"></i>@Model.Guests người
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Note))
+                    {
+                        <div class="mb-0">
+                            <div class="detail-label">Ghi chú</div>
+                            <div class="detail-value text-muted">@Model.Note</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin đặt bàn -->
+        <div class="col-lg-6 mb-4">
+            <div class="card detail-card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-table me-2"></i>Thông tin đặt bàn
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="detail-label">Bàn</div>
+                        <div class="detail-value">
+                            <i class="fas fa-utensils text-warning me-2"></i>@Model.Table.Name
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="detail-label">Tầng</div>
+                        <div class="detail-value">
+                            <i class="fas fa-building text-primary me-2"></i>@Model.Table.Floor
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="detail-label">Sức chứa bàn</div>
+                        <div class="detail-value">@Model.Table.Capacity người</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="detail-label">Mô tả bàn</div>
+                        <div class="detail-value text-muted">@Model.Table.Description</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Thời gian -->
+        <div class="col-lg-6 mb-4">
+            <div class="card detail-card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-clock me-2"></i>Thời gian đặt
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="detail-label">Ngày đặt</div>
+                        <div class="detail-value">
+                            <i class="fas fa-calendar text-danger me-2"></i>@Model.BookingDate.ToString("dd/MM/yyyy (dddd)")
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="detail-label">Giờ đặt</div>
+                        <div class="detail-value">
+                            <i class="fas fa-clock text-warning me-2"></i>@Model.BookingTime
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <div class="detail-label">Thời gian tạo</div>
+                        <div class="detail-value text-muted">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trạng thái -->
+        <div class="col-lg-6 mb-4">
+            <div class="card detail-card">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-info-circle me-2"></i>Trạng thái
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="detail-label">Trạng thái hiện tại</div>
+                        @switch (Model.Status)
+                        {
+                            case "Pending":
+                                <span class="status-badge-large bg-warning text-dark">
+                                    <i class="fas fa-hourglass-half me-2"></i>Chờ xác nhận
+                                </span>
+                                break;
+                            case "Confirmed":
+                                <span class="status-badge-large bg-success text-white">
+                                    <i class="fas fa-check-circle me-2"></i>Đã xác nhận
+                                </span>
+                                break;
+                            case "Cancelled":
+                                <span class="status-badge-large bg-danger text-white">
+                                    <i class="fas fa-times-circle me-2"></i>Đã hủy
+                                </span>
+                                break;
+                            case "Completed":
+                                <span class="status-badge-large bg-info text-white">
+                                    <i class="fas fa-check me-2"></i>Hoàn thành
+                                </span>
+                                break;
+                            default:
+                                <span class="status-badge-large bg-secondary text-white">@Model.Status</span>
+                                break;
+                        }
+                    </div>
+
+                    @if (Model.Status == "Pending")
+                    {
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Booking này đang chờ xác nhận. Hãy xác nhận hoặc từ chối.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Món ăn đã đặt -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card detail-card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-utensils me-2"></i>Món ăn đã đặt
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.OrderItems != null && Model.OrderItems.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Món ăn</th>
+                                        <th class="text-center">Số lượng</th>
+                                        <th class="text-end">Đơn giá</th>
+                                        <th class="text-end">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int stt = 1;
+                                        decimal total = 0;
+                                    }
+                                    @foreach (var item in Model.OrderItems)
+                                    {
+                                        var subtotal = item.Price * item.Quantity;
+                                        total += subtotal;
+                                        <tr>
+                                            <td>@stt</td>
+                                            <td>
+                                                <div>
+                                                    <strong>@(item.MenuItem?.Name ?? "Món ăn")</strong>
+                                                    <br/>
+                                                    <small class="text-muted">@(item.MenuItem?.Category ?? "")</small>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary">x@(item.Quantity)</span>
+                                            </td>
+                                            <td class="text-end">@item.Price.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+                                            <td class="text-end fw-bold">@subtotal.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+                                        </tr>
+                                        stt++;
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="4" class="text-end">Tổng cộng:</th>
+                                        <th class="text-end text-success">@total.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Chưa có món ăn nào được đặt trước.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action History (Future feature) -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card detail-card">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-history me-2"></i>Lịch sử thay đổi
+                    </h6>
+                </div>
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Tính năng lưu lịch sử thay đổi sẽ được bổ sung sau.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Copy functions từ Index.cshtml
+    function confirmBooking(bookingId) {
+        Swal.fire({
+            title: 'Xác nhận đặt bàn?',
+            text: 'Bạn có chắc chắn muốn xác nhận đặt bàn này?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-check me-1"></i>Xác nhận',
+            cancelButtonText: '<i class="fas fa-times me-1"></i>Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                fetch('@Url.Action("Confirm", "AdminBooking")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: bookingId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => { location.reload(); });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Lỗi!', text: data.message });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({ icon: 'error', title: 'Lỗi!', text: 'Có lỗi xảy ra.' });
+                });
+            }
+        });
+    }
+
+    function rejectBooking(bookingId) {
+        Swal.fire({
+            title: 'Từ chối đặt bàn?',
+            text: 'Nhập lý do từ chối (tùy chọn):',
+            icon: 'warning',
+            input: 'textarea',
+            inputPlaceholder: 'Lý do từ chối...',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-times me-1"></i>Từ chối',
+            cancelButtonText: '<i class="fas fa-arrow-left me-1"></i>Quay lại'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                fetch('@Url.Action("Reject", "AdminBooking")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: bookingId, reason: result.value || '' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Đã từ chối!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => { location.reload(); });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Lỗi!', text: data.message });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({ icon: 'error', title: 'Lỗi!', text: 'Có lỗi xảy ra.' });
+                });
+            }
+        });
+    }
+</script>

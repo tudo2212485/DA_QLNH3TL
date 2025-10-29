@@ -1,0 +1,61 @@
+@model QLNHWebApp.Models.Order
+@{
+    ViewData["Title"] = "Thanh toán thành công";
+}
+
+<link href="~/css/payment.css" rel="stylesheet" />
+
+<div class="payment-container success-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card payment-card text-center">
+                    <div class="card-body">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h2 class="text-success mb-4">Thanh toán thành công!</h2>
+                        
+                        <div class="success-details">
+                            <div class="order-badge mb-3">
+                                <i class="fas fa-tag"></i> Mã đơn hàng: #@Model.Id
+                            </div>
+                            
+                            <div class="booking-info">
+                                <p><strong>Khách hàng:</strong> @Model.CustomerName</p>
+                                <p><strong>Ngày đặt:</strong> @Model.Date.ToString("dd/MM/yyyy")</p>
+                                <p><strong>Giờ:</strong> @Model.Time</p>
+                                <p><strong>Số người:</strong> @Model.Guests</p>
+                                <p><strong>Tổng tiền:</strong> <span class="text-primary">@Model.TotalPrice.ToString("N0") VNĐ</span></p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Lưu ý:</strong> Vui lòng đến đúng giờ đã đặt. 
+                            Nhà hàng sẽ giữ bàn trong 15 phút.
+                        </div>
+
+                        <div class="success-actions mt-4">
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg">
+                                <i class="fas fa-home"></i> Về trang chủ
+                            </a>
+                            <a href="@Url.Action("Index", "Menu")" class="btn btn-outline-primary btn-lg ml-2">
+                                <i class="fas fa-utensils"></i> Xem thực đơn
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto redirect after 10 seconds
+    setTimeout(function() {
+        if (confirm('Bạn có muốn về trang chủ không?')) {
+            window.location.href = '@Url.Action("Index", "Home")';
+        }
+    }, 10000);
+</script>

@@ -1,0 +1,308 @@
+@model QLNHWebApp.Models.Order
+@{
+    ViewData["Title"] = "Hóa đơn";
+    Layout = null;
+    var settings = ViewBag.Settings as QLNHWebApp.Models.RestaurantSettings;
+    var subtotal = Model.TotalPrice;
+    var vat = subtotal * 0.1m;
+    var grandTotal = subtotal + vat;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hóa đơn #@Model.Id.ToString("D4")</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @@media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #f5f5f5;
+        }
+
+        .invoice-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .invoice-header {
+            text-align: center;
+            border-bottom: 2px dashed #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .invoice-header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .invoice-header p {
+            margin: 2px 0;
+            font-size: 14px;
+        }
+
+        .invoice-details {
+            margin-bottom: 30px;
+        }
+
+        .invoice-details table {
+            width: 100%;
+        }
+
+        .invoice-details td {
+            padding: 5px 0;
+            font-size: 14px;
+        }
+
+        .invoice-details td:first-child {
+            font-weight: bold;
+            width: 150px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .items-table th {
+            background: #333;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .items-table tr:last-child td {
+            border-bottom: 2px solid #333;
+        }
+
+        .totals-section {
+            text-align: right;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #333;
+        }
+
+        .totals-section table {
+            margin-left: auto;
+            width: 300px;
+        }
+
+        .totals-section td {
+            padding: 8px;
+            font-size: 15px;
+        }
+
+        .totals-section .grand-total {
+            font-size: 20px;
+            font-weight: bold;
+            border-top: 2px solid #333;
+        }
+
+        .invoice-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px dashed #333;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .signature-section {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0 20px 0;
+            text-align: center;
+        }
+
+        .signature-box {
+            width: 200px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 60px;
+            padding-top: 5px;
+            font-weight: bold;
+        }
+
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="invoice-container">
+        <!-- Header -->
+        <div class="invoice-header">
+            <h1>@(settings?.RestaurantName ?? "NHÀ HÀNG 3TL")</h1>
+            <p>@(settings?.Address ?? "Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM")</p>
+            <p>Điện thoại: @(settings?.Phone ?? "0123 456 789") | Email: @(settings?.Email ?? "contact@restaurant.vn")
+            </p>
+            <p style="margin-top: 15px; font-size: 18px; font-weight: bold;">HÓA ĐƠN THANH TOÁN</p>
+            <p style="font-size: 16px;">Số: #@Model.Id.ToString("D4")</p>
+        </div>
+
+        <!-- Customer & Order Details -->
+        <div class="invoice-details">
+            <table>
+                <tr>
+                    <td>Khách hàng:</td>
+                    <td>@Model.CustomerName</td>
+                </tr>
+                <tr>
+                    <td>Số điện thoại:</td>
+                    <td>@Model.Phone</td>
+                </tr>
+                <tr>
+                    <td>Ngày:</td>
+                    <td>@Model.Date.ToString("dd/MM/yyyy") - @Model.Time</td>
+                </tr>
+                <tr>
+                    <td>Số khách:</td>
+                    <td>@Model.Guests người</td>
+                </tr>
+                <tr>
+                    <td>Bàn:</td>
+                    <td>@(Model.Table?.Name ?? "N/A")</td>
+                </tr>
+                @if (!string.IsNullOrEmpty(Model.Note))
+                {
+                    <tr>
+                        <td>Ghi chú:</td>
+                        <td>@Model.Note</td>
+                    </tr>
+                }
+            </table>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">STT</th>
+                    <th>Tên món</th>
+                    <th style="width: 100px; text-align: center;">SL</th>
+                    <th style="width: 120px; text-align: right;">Đơn giá</th>
+                    <th style="width: 150px; text-align: right;">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.OrderItems != null && Model.OrderItems.Any())
+                {
+                    int stt = 1;
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        <tr>
+                            <td>@stt</td>
+                            <td>@(item.MenuItem?.Name ?? "Món ăn")</td>
+                            <td style="text-align: center;">@item.Quantity</td>
+                            <td style="text-align: right;">@item.Price.ToString("N0") đ</td>
+                            <td style="text-align: right;">@((item.Price * item.Quantity).ToString("N0")) đ</td>
+                        </tr>
+                        stt++;
+                    }
+                }
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <table>
+                <tr>
+                    <td>Tạm tính:</td>
+                    <td style="text-align: right;">@subtotal.ToString("N0") đ</td>
+                </tr>
+                <tr>
+                    <td>VAT (10%):</td>
+                    <td style="text-align: right;">@vat.ToString("N0") đ</td>
+                </tr>
+                <tr class="grand-total">
+                    <td>TỔNG CỘNG:</td>
+                    <td style="text-align: right;">@grandTotal.ToString("N0") đ</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <p>Khách hàng</p>
+                <div class="signature-line">
+                    (Ký và ghi rõ họ tên)
+                </div>
+            </div>
+            <div class="signature-box">
+                <p>Thu ngân</p>
+                <div class="signature-line">
+                    (Ký và ghi rõ họ tên)
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="invoice-footer">
+            <p><strong>Cảm ơn quý khách! Hẹn gặp lại!</strong></p>
+            <p>Hóa đơn được in lúc: @DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</p>
+            <p style="font-size: 11px; margin-top: 10px; color: #666;">
+                Hóa đơn này là bằng chứng thanh toán. Vui lòng kiểm tra kỹ trước khi rời khỏi nhà hàng.<br />
+                Mọi thắc mắc xin liên hệ: @(settings?.Phone ?? "0123 456 789")
+            </p>
+        </div>
+    </div>
+
+    <!-- Print Button -->
+    <div class="print-button no-print">
+        <button class="btn btn-primary btn-lg" onclick="window.print()">
+            <i class="bi bi-printer"></i> In hóa đơn
+        </button>
+        <button class="btn btn-secondary btn-lg ms-2" onclick="window.close()">
+            <i class="bi bi-x-circle"></i> Đóng
+        </button>
+    </div>
+
+    <script>
+        // Auto print when page loads (optional)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+

@@ -1,0 +1,231 @@
+@model QLNHWebApp.Models.TableBooking
+@{
+    ViewData["Title"] = "Chỉnh sửa Đặt bàn";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var tables = ViewBag.Tables as List<QLNHWebApp.Models.Table>;
+}
+
+<style>
+    .edit-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Chỉnh sửa Đặt bàn #@Model.Id</h1>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Edit Form -->
+        <div class="col-lg-8 mb-4">
+            <div class="card edit-card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-edit me-2"></i>Thông tin đặt bàn
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="@Url.Action("Edit", new { id = Model.Id })">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="Id" value="@Model.Id" />
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="CustomerName" class="form-label">
+                                    Tên khách hàng <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="CustomerName" name="CustomerName" 
+                                       value="@Model.CustomerName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="Phone" class="form-label">
+                                    Số điện thoại <span class="text-danger">*</span>
+                                </label>
+                                <input type="tel" class="form-control" id="Phone" name="Phone" 
+                                       value="@Model.Phone" pattern="[0-9]{10}" required>
+                                <div class="form-text">Nhập 10 chữ số</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="BookingDate" class="form-label">
+                                    Ngày đặt <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control" id="BookingDate" name="BookingDate" 
+                                       value="@Model.BookingDate.ToString("yyyy-MM-dd")" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="BookingTime" class="form-label">
+                                    Giờ đặt <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="BookingTime" name="BookingTime" required>
+                                    <option value="">Chọn giờ</option>
+                                    @for (int hour = 10; hour <= 22; hour++)
+                                    {
+                                        for (int minute = 0; minute < 60; minute += 30)
+                                        {
+                                            var timeValue = $"{hour:00}:{minute:00}";
+                                            <option value="@timeValue" selected="@(Model.BookingTime == timeValue)">
+                                                @timeValue
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="TableId" class="form-label">
+                                    Bàn <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="TableId" name="TableId" required>
+                                    <option value="">Chọn bàn</option>
+                                    @if (tables != null)
+                                    {
+                                        var groupedTables = tables.GroupBy(t => t.Floor);
+                                        foreach (var group in groupedTables)
+                                        {
+                                            <optgroup label="@group.Key">
+                                                @foreach (var table in group)
+                                                {
+                                                    <option value="@table.Id" selected="@(Model.TableId == table.Id)">
+                                                        @table.Name (@table.Capacity người)
+                                                    </option>
+                                                }
+                                            </optgroup>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="Guests" class="form-label">
+                                    Số khách <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="Guests" name="Guests" required>
+                                    @for (int i = 1; i <= 20; i++)
+                                    {
+                                        <option value="@i" selected="@(Model.Guests == i)">@i người</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="Note" class="form-label">Ghi chú</label>
+                                <textarea class="form-control" id="Note" name="Note" rows="3" 
+                                          placeholder="Ghi chú đặc biệt...">@Model.Note</textarea>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="Status" class="form-label">
+                                    Trạng thái <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="Status" name="Status" required>
+                                    <option value="Pending" selected="@(Model.Status == "Pending")">Chờ xác nhận</option>
+                                    <option value="Confirmed" selected="@(Model.Status == "Confirmed")">Đã xác nhận</option>
+                                    <option value="Cancelled" selected="@(Model.Status == "Cancelled")">Đã hủy</option>
+                                    <option value="Completed" selected="@(Model.Status == "Completed")">Hoàn thành</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="text-end mt-4">
+                            <a href="@Url.Action("Index")" class="btn btn-secondary me-2">
+                                <i class="fas fa-times me-1"></i>Hủy bỏ
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Summary -->
+        <div class="col-lg-4 mb-4">
+            <div class="card edit-card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-info-circle me-2"></i>Thông tin đặt bàn
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Mã đặt bàn:</strong> #@Model.Id
+                    </div>
+                    <div class="mb-3">
+                        <strong>Bàn hiện tại:</strong> @Model.Table.Name
+                    </div>
+                    <div class="mb-3">
+                        <strong>Tầng:</strong> @Model.Table.Floor
+                    </div>
+                    <div class="mb-3">
+                        <strong>Sức chứa:</strong> @Model.Table.Capacity người
+                    </div>
+                    <div class="mb-3">
+                        <strong>Trạng thái:</strong><br>
+                        @switch (Model.Status)
+                        {
+                            case "Pending":
+                                <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                break;
+                            case "Confirmed":
+                                <span class="badge bg-success">Đã xác nhận</span>
+                                break;
+                            case "Cancelled":
+                                <span class="badge bg-danger">Đã hủy</span>
+                                break;
+                            case "Completed":
+                                <span class="badge bg-info">Hoàn thành</span>
+                                break;
+                            default:
+                                <span class="badge bg-secondary">@Model.Status</span>
+                                break;
+                        }
+                    </div>
+                    <div class="mb-3">
+                        <strong>Thời gian tạo:</strong><br>
+                        <small class="text-muted">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card edit-card mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Lưu ý
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0 small">
+                        <li>Kiểm tra kỹ thông tin trước khi lưu</li>
+                        <li>Đảm bảo bàn còn trống trong khung giờ đã chọn</li>
+                        <li>Liên hệ khách hàng nếu cần thay đổi quan trọng</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set minimum date to today
+    document.getElementById('BookingDate').min = new Date().toISOString().split('T')[0];
+</script>

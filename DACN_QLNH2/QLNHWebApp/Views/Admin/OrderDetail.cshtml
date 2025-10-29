@@ -1,0 +1,140 @@
+@model QLNHWebApp.Models.Order
+@{
+    ViewData["Title"] = $"Chi tiết đơn hàng #{Model.Id}";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>🧾 Chi tiết đơn hàng #@Model.Id</h2>
+                <a href="/Admin/Orders" class="btn btn-secondary">
+                    ← Quay lại danh sách
+                </a>
+            </div>
+
+            <div class="row">
+                <!-- Thông tin khách hàng -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5>👤 Thông tin khách hàng</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Tên:</strong> @Model.CustomerName</p>
+                            <p><strong>Số điện thoại:</strong> @Model.Phone</p>
+                            <p><strong>Ngày:</strong> @Model.Date.ToString("dd/MM/yyyy")</p>
+                            <p><strong>Giờ:</strong> @Model.Time</p>
+                            <p><strong>Số khách:</strong> @Model.Guests người</p>
+                            @if (!string.IsNullOrEmpty(Model.Note))
+                            {
+                                <p><strong>Ghi chú:</strong> @Model.Note</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thông tin đơn hàng -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5>📋 Thông tin đơn hàng</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Mã đơn hàng:</strong> #@Model.Id</p>
+                            <p><strong>Trạng thái:</strong> 
+                                @switch (Model.Status)
+                                {
+                                    case "Pending":
+                                        <span class="badge bg-warning">⏳ Chờ xử lý</span>
+                                        break;
+                                    case "Confirmed":
+                                        <span class="badge bg-success">✅ Đã xác nhận</span>
+                                        break;
+                                    case "Cancelled":
+                                        <span class="badge bg-danger">❌ Đã hủy</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary">@Model.Status</span>
+                                        break;
+                                }
+                            </p>
+                            <p><strong>Tổng tiền:</strong> 
+                                <span class="h4 text-success">
+                                    @Model.TotalPrice.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chi tiết món ăn -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5>🍽️ Món ăn đã đặt</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.OrderItems != null && Model.OrderItems.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Tên món</th>
+                                                <th>Đơn giá</th>
+                                                <th>Số lượng</th>
+                                                <th>Thành tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                decimal totalAmount = 0;
+                                            }
+                                            @foreach (var item in Model.OrderItems)
+                                            {
+                                                var itemTotal = item.Price * item.Quantity;
+                                                totalAmount += itemTotal;
+                                                <tr>
+                                                    <td>
+                                                        <strong>@(item.MenuItem?.Name ?? "Món ăn")</strong>
+                                                        @if (!string.IsNullOrEmpty(item.MenuItem?.Description))
+                                                        {
+                                                            <br><small class="text-muted">@item.MenuItem.Description</small>
+                                                        }
+                                                    </td>
+                                                    <td>@item.Price.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+                                                    <td>
+                                                        <span class="badge bg-primary">@item.Quantity</span>
+                                                    </td>
+                                                    <td>
+                                                        <strong>@itemTotal.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</strong>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="table-success">
+                                                <th colspan="3">Tổng cộng</th>
+                                                <th>@totalAmount.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning">
+                                    <h6>⚠️ Không có món ăn nào</h6>
+                                    <p class="mb-0">Đơn hàng này không có món ăn được đặt.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

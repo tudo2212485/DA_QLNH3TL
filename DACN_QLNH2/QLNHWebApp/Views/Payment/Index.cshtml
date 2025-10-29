@@ -1,0 +1,573 @@
+@model QLNHWebApp.Models.Order
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    .payment-page {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+
+    .payment-header {
+        background: rgba(255, 255, 255, 0.98);
+        padding: 30px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+    }
+
+    .payment-header h2 {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        margin: 0;
+        font-size: 28px;
+    }
+
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 15px;
+    }
+
+    .breadcrumb-item a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .breadcrumb-item.active {
+        color: #666;
+    }
+
+    .payment-content {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 30px;
+    }
+
+    .order-details {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .order-section {
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .order-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px 25px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .section-header:hover {
+        opacity: 0.9;
+    }
+
+    .section-header i {
+        font-size: 14px;
+    }
+
+    .section-content {
+        padding: 25px;
+        background: white;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding: 12px 0;
+        border-bottom: 1px dashed #eee;
+    }
+
+    .info-row:last-child {
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+
+    .info-row span:first-child {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .info-row span:last-child {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .item-info {
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+
+    .item-number {
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50%;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .item-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        margin: 0 15px;
+        object-fit: cover;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .item-details {
+        flex: 1;
+    }
+
+    .item-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    .item-price {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .payment-sidebar {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 16px;
+        padding: 30px;
+        height: fit-content;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        position: sticky;
+        top: 20px;
+    }
+
+    .payment-summary {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .payment-summary h5 {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        margin-bottom: 20px;
+        font-size: 20px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding: 8px 0;
+        font-size: 15px;
+    }
+
+    .summary-row span:first-child {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .summary-row span:last-child {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .summary-total {
+        font-weight: 700;
+        font-size: 22px;
+        color: #e74c3c;
+        border-top: 2px solid #f0f0f0;
+        padding-top: 15px;
+        margin-top: 10px;
+    }
+
+    .summary-total span:last-child {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .payment-methods {
+        margin-bottom: 30px;
+    }
+
+    .payment-method {
+        margin-bottom: 12px;
+        position: relative;
+    }
+
+    .payment-method input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .payment-method label {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .payment-method label::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .payment-method label>* {
+        position: relative;
+        z-index: 1;
+    }
+
+    .payment-method label i {
+        margin-right: 12px;
+        font-size: 20px;
+        color: #667eea;
+        transition: color 0.3s ease;
+    }
+
+    .payment-method input[type="radio"]:checked+label {
+        border-color: #667eea;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .payment-method input[type="radio"]:checked+label::before {
+        opacity: 0.05;
+    }
+
+    .payment-method input[type="radio"]:checked+label i {
+        color: #667eea;
+    }
+
+    .payment-method label:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+    }
+
+    .payment-form-group {
+        margin-bottom: 25px;
+    }
+
+    .payment-form-group label {
+        display: block;
+        margin-bottom: 12px;
+        font-weight: 700;
+        color: #333;
+        font-size: 16px;
+    }
+
+    .payment-button {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 18px;
+        border-radius: 12px;
+        font-size: 17px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .payment-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+    }
+
+    .payment-button:active {
+        transform: translateY(-1px);
+    }
+
+    .payment-button i {
+        margin-left: 10px;
+    }
+
+    .collapse-icon {
+        margin-left: auto;
+        transition: transform 0.3s ease;
+    }
+
+    .collapsed .collapse-icon {
+        transform: rotate(-180deg);
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background: #f8f9fa;
+        color: #666;
+        font-weight: 600;
+        border: none;
+        padding: 12px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table tbody td {
+        padding: 15px 12px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .table tfoot td {
+        padding: 15px 12px;
+        font-size: 16px;
+        background: #f8f9fa;
+        border: none;
+    }
+
+    @@media (max-width: 768px) {
+        .payment-content {
+            grid-template-columns: 1fr;
+        }
+
+        .payment-sidebar {
+            position: relative;
+            top: 0;
+        }
+
+        .payment-header h2 {
+            font-size: 22px;
+        }
+    }
+</style>
+
+<div class="payment-page">
+    <div class="container">
+        <!-- Header -->
+        <div class="payment-header">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Thanh toán</li>
+                </ol>
+            </nav>
+            <h2 class="mt-3 mb-0">THANH TOÁN TRƯỚC CHO ĐƠN ĐẶT BÀN</h2>
+        </div>
+
+        <div class="payment-content">
+            <!-- Left Side - Order Details -->
+            <div class="order-details">
+                <!-- Thông tin đơn đặt bàn -->
+                <div class="order-section">
+                    <div class="section-header" onclick="toggleSection('booking-info')">
+                        <span><i class="fas fa-user-circle me-2"></i>Thông tin đơn đặt bàn</span>
+                        <i class="fas fa-chevron-down collapse-icon"></i>
+                    </div>
+                    <div class="section-content" id="booking-info">
+                        <div class="info-row">
+                            <span><i class="fas fa-user me-2"></i>Tên người đặt bàn:</span>
+                            <span>@Model.CustomerName</span>
+                        </div>
+                        <div class="info-row">
+                            <span><i class="fas fa-phone me-2"></i>Điện thoại:</span>
+                            <span>@Model.Phone</span>
+                        </div>
+                        <div class="info-row">
+                            <span><i class="fas fa-calendar-alt me-2"></i>Thời gian dùng bữa:</span>
+                            <span>@Model.Date.ToString("dd/MM/yyyy") - @Model.Time</span>
+                        </div>
+                        <div class="info-row">
+                            <span><i class="fas fa-users me-2"></i>Số khách:</span>
+                            <span>@Model.Guests người</span>
+                        </div>
+                        <div class="info-row">
+                            <span><i class="fas fa-map-marker-alt me-2"></i>Địa điểm:</span>
+                            <span>Cơ sở 1 - 113 Trần Phú, TP.Vinh</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thực đơn đặt trước -->
+                <div class="order-section">
+                    <div class="section-header" onclick="toggleSection('menu-details')">
+                        <span><i class="fas fa-utensils me-2"></i>Thực đơn đặt trước</span>
+                        <i class="fas fa-chevron-down collapse-icon"></i>
+                    </div>
+                    <div class="section-content" id="menu-details">
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Món ăn</th>
+                                    <th>Giá bán</th>
+                                    <th>Số lượng</th>
+                                    <th>Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int stt = 1;
+                                }
+                                @foreach (var item in Model.OrderItems)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="item-number">@stt</div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@(item.MenuItem?.ImageUrl ?? "/images/placeholder-dish.jpg")"
+                                                    alt="@(item.MenuItem?.Name ?? "Món ăn")" class="item-image"
+                                                    onerror="this.src='/images/placeholder-dish.jpg'">
+                                                <span class="fw-semibold">@(item.MenuItem?.Name ?? "Món ăn")</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-muted">@item.Price.ToString("N0") đ</td>
+                                        <td><span class="badge bg-primary">x@item.Quantity</span></td>
+                                        <td class="fw-bold text-success">@((item.Price * item.Quantity).ToString("N0")) đ
+                                        </td>
+                                    </tr>
+                                    stt++;
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong><i class="fas fa-calculator me-2"></i>Tổng
+                                            cộng:</strong></td>
+                                    <td><strong class="text-danger fs-5">@Model.TotalPrice.ToString("N0") đ</strong>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Payment -->
+            <div class="payment-sidebar">
+                <div class="payment-summary">
+                    <h5><i class="fas fa-credit-card me-2"></i>THANH TOÁN</h5>
+                    <div class="summary-row">
+                        <span>Tạm tính:</span>
+                        <span>@Model.TotalPrice.ToString("N0") đ</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>VAT (10%):</span>
+                        <span>@((Model.TotalPrice * 0.1m).ToString("N0")) đ</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Tổng thanh toán:</span>
+                        <span>@((Model.TotalPrice * 1.1m).ToString("N0")) đ</span>
+                    </div>
+                </div>
+
+                <form asp-action="ProcessPayment" method="post">
+                    <input type="hidden" name="orderId" value="@Model.Id" />
+                    <input type="hidden" name="paymentType" value="full" />
+
+                    <div class="payment-form-group">
+                        <label><i class="fas fa-wallet me-2"></i>Phương thức thanh toán</label>
+                        <div class="payment-methods">
+                            <div class="payment-method">
+                                <input type="radio" id="restaurant" name="paymentMethod" value="restaurant" checked>
+                                <label for="restaurant">
+                                    <i class="fas fa-store"></i>
+                                    <span>Thanh toán tại nhà hàng</span>
+                                </label>
+                            </div>
+                            <div class="payment-method">
+                                <input type="radio" id="vnpay" name="paymentMethod" value="vnpay">
+                                <label for="vnpay">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <span>Thanh toán qua ví VNPAY</span>
+                                </label>
+                            </div>
+                            <div class="payment-method">
+                                <input type="radio" id="bank" name="paymentMethod" value="bank_transfer">
+                                <label for="bank">
+                                    <i class="fas fa-university"></i>
+                                    <span>Chuyển khoản ngân hàng</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="payment-button">
+                        <i class="fas fa-lock me-2"></i>XÁC NHẬN THANH TOÁN
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSection(sectionId) {
+        const content = document.getElementById(sectionId);
+        const header = content.previousElementSibling;
+
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            header.classList.remove('collapsed');
+        } else {
+            content.style.display = 'none';
+            header.classList.add('collapsed');
+        }
+    }
+</script>

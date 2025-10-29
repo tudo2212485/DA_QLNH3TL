@@ -1,0 +1,396 @@
+@model IEnumerable<QLNHWebApp.Models.Order>
+@{
+    ViewData["Title"] = "Đơn hiện thời";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                <h4 class="mb-sm-0">
+                    <i class="bx bx-food-menu me-2"></i>Đơn hiện thời
+                    <span class="badge bg-primary ms-2">Đang phục vụ</span>
+                </h4>
+                <div class="page-title-right">
+                    <a href="@Url.Action("History", "OrderManagement")" class="btn btn-outline-primary">
+                        <i class="bx bx-history me-1"></i>Lịch sử hóa đơn
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-muted d-block mb-1">Tổng đơn hàng</span>
+                            <h4 class="mb-0 text-primary">@ViewBag.TotalOrders</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-md rounded bg-primary bg-gradient d-flex align-items-center justify-content-center">
+                                <i class="bx bx-receipt text-white fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-muted d-block mb-1">Chờ thanh toán</span>
+                            <h4 class="mb-0 text-warning">@ViewBag.PendingPayment</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-md rounded bg-warning bg-gradient d-flex align-items-center justify-content-center">
+                                <i class="bx bx-time text-white fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-muted d-block mb-1">Đang phục vụ</span>
+                            <h4 class="mb-0 text-success">@ViewBag.ServingOrders</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-md rounded bg-success bg-gradient d-flex align-items-center justify-content-center">
+                                <i class="bx bx-check text-white fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-muted d-block mb-1">Tổng doanh thu</span>
+                            <h4 class="mb-0 text-info">@ViewBag.TotalRevenue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-md rounded bg-info bg-gradient d-flex align-items-center justify-content-center">
+                                <i class="bx bx-dollar text-white fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-lg-4 col-md-6">
+                            <label class="form-label">Tìm kiếm</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bx bx-search"></i></span>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Tên khách hàng, SĐT, Bàn...">
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="Đang phục vụ">Đang phục vụ</option>
+                                <option value="Chưa thanh toán">Chưa thanh toán</option>
+                                <option value="Đã xác nhận">Đã xác nhận</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-5 col-md-12">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-primary" onclick="filterOrders()">
+                                    <i class="bx bx-search me-1"></i>Tìm kiếm
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
+                                    <i class="bx bx-reset me-1"></i>Reset
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="refreshData()">
+                                    <i class="bx bx-refresh me-1"></i>Làm mới
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0">
+                        <i class="bx bx-list-ul me-2"></i>Danh sách đơn hàng (@Model.Count())
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="ordersTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center">#</th>
+                                        <th>Thông tin khách hàng</th>
+                                        <th class="text-center">Ngày đặt</th>
+                                        <th class="text-center">Giờ</th>
+                                        <th class="text-center">Số khách</th>
+                                        <th>Món đã đặt</th>
+                                        <th class="text-end">Tổng tiền</th>
+                                        <th class="text-center">Trạng thái</th>
+                                        <th class="text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.OrderByDescending(o => o.Id))
+                                    {
+                                        <tr data-order-id="@order.Id">
+                                            <td class="text-center fw-bold">#@order.Id.ToString("D4")</td>
+                                            <td>
+                                                <div>
+                                                    <span class="fw-semibold d-block">@order.CustomerName</span>
+                                                    <small class="text-muted">
+                                                        <i class="bx bx-phone me-1"></i>@order.Phone
+                                                    </small>
+                                                    @if (order.Table != null)
+                                                    {
+                                                        <br/>
+                                                        <span class="badge bg-secondary mt-1">
+                                                            <i class="bx bx-table me-1"></i>@order.Table.Name
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark">
+                                                    @order.Date.ToString("dd/MM/yyyy")
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-info">@order.Time</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary">@order.Guests người</span>
+                                            </td>
+                                            <td>
+                                                @if (order.OrderItems != null && order.OrderItems.Any())
+                                                {
+                                                    <div class="order-items">
+                                                        @foreach (var item in order.OrderItems.Take(2))
+                                                        {
+                                                            <div class="item-row">
+                                                                <span class="text-primary fw-medium">@(item.MenuItem?.Name ?? "Món ăn")</span>
+                                                                <span class="badge bg-secondary ms-1">x@(item.Quantity)</span>
+                                                            </div>
+                                                        }
+                                                        @if (order.OrderItems.Count() > 2)
+                                                        {
+                                                            <small class="text-muted">+@(order.OrderItems.Count() - 2) món khác...</small>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <em class="text-muted">Chưa có món ăn</em>
+                                                }
+                                            </td>
+                                            <td class="text-end fw-bold text-success">
+                                                @order.TotalPrice.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                    string badgeClass = order.Status switch
+                                                    {
+                                                        "Đang phục vụ" => "bg-primary",
+                                                        "Chưa thanh toán" => "bg-warning",
+                                                        "Đã xác nhận" => "bg-success",
+                                                        "Đã thanh toán" => "bg-info",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @badgeClass">@order.Status</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a href="@Url.Action("Edit", new { id = order.Id })" 
+                                                       class="btn btn-outline-primary btn-sm" 
+                                                       title="Chỉnh sửa đơn hàng">
+                                                        <i class="bx bx-edit"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-outline-success btn-sm" 
+                                                            onclick="processPayment(@order.Id)"
+                                                            title="Thanh toán">
+                                                        <i class="bx bx-dollar"></i>
+                                                    </button>
+                                                    <a href="@Url.Action("PrintInvoice", new { id = order.Id })" 
+                                                       class="btn btn-outline-info btn-sm" 
+                                                       target="_blank"
+                                                       title="In hóa đơn">
+                                                        <i class="bx bx-printer"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center p-5">
+                            <div class="mb-4">
+                                <i class="bx bx-receipt" style="font-size: 4rem; color: #e9ecef;"></i>
+                            </div>
+                            <h5 class="text-muted">Chưa có đơn hàng nào</h5>
+                            <p class="text-muted">Đơn hàng sẽ tự động được tạo khi xác nhận đặt bàn.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Filter orders
+        function filterOrders() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            const rows = document.querySelectorAll('#ordersTable tbody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const customerInfo = row.cells[1].textContent.toLowerCase();
+                const status = row.cells[7].textContent.trim();
+                
+                let show = true;
+                
+                if (searchTerm && !customerInfo.includes(searchTerm)) {
+                    show = false;
+                }
+                
+                if (statusFilter && !status.includes(statusFilter)) {
+                    show = false;
+                }
+                
+                row.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
+            });
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            
+            const rows = document.querySelectorAll('#ordersTable tbody tr');
+            rows.forEach(row => row.style.display = '');
+        }
+
+        // Process payment
+        function processPayment(orderId) {
+            if (!confirm('Xác nhận thanh toán đơn hàng này?')) return;
+            
+            fetch('/OrderManagement/Payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ orderId: orderId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    // Mở trang in hóa đơn
+                    window.open('/OrderManagement/PrintInvoice/' + orderId, '_blank');
+                    // Refresh trang sau 1 giây
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi thanh toán!');
+            });
+        }
+
+        // Refresh data
+        function refreshData() {
+            location.reload();
+        }
+
+        // Search on input
+        document.getElementById('searchInput')?.addEventListener('input', filterOrders);
+        document.getElementById('statusFilter')?.addEventListener('change', filterOrders);
+    </script>
+
+    <style>
+        .stats-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        .avatar-md {
+            height: 3.5rem;
+            width: 3.5rem;
+        }
+        
+        .table th {
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 0.75rem;
+        }
+        
+        .table td {
+            padding: 1rem 0.75rem;
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+        
+        .order-items .item-row {
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .btn-group .btn {
+            margin: 0 1px;
+        }
+    </style>
+}
+

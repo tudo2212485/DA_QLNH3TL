@@ -1,0 +1,715 @@
+@model IEnumerable<QLNHWebApp.Models.Employee>
+@{
+    ViewData["Title"] = "Quản lý Nhân viên";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                <h4 class="mb-sm-0"><i class="bx bx-group me-2"></i>Quản lý Nhân viên</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "Admin")">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Nhân viên</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-muted d-block mb-1">Tổng nhân viên</span>
+                            <h4 class="mb-0 text-primary">@Model.Count()</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-md rounded bg-primary bg-gradient d-flex align-items-center justify-content-center">
+                                <i class="bx bx-group text-white fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-muted d-block mb-1">Admin</span>
+                            <h4 class="mb-0 text-danger">@Model.Count(e => e.Role == "Admin")</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-md rounded bg-danger bg-gradient d-flex align-items-center justify-content-center">
+                                <i class="bx bx-shield text-white fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-muted d-block mb-1">Nhân viên</span>
+                            <h4 class="mb-0 text-success">@Model.Count(e => e.Role == "Waiter")</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-md rounded bg-success bg-gradient d-flex align-items-center justify-content-center">
+                                <i class="bx bx-user text-white fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-muted d-block mb-1">Đầu bếp</span>
+                            <h4 class="mb-0 text-info">@Model.Count(e => e.Role == "Chef")</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="avatar-md rounded bg-info bg-gradient d-flex align-items-center justify-content-center">
+                                <i class="bx bx-food-menu text-white fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-lg-4 col-md-6">
+                            <label class="form-label">Tìm kiếm</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bx bx-search"></i></span>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Tên, username, email...">
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label">Vai trò</label>
+                            <select class="form-select" id="roleFilter">
+                                <option value="">Tất cả vai trò</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Waiter">Nhân viên</option>
+                                <option value="Chef">Đầu bếp</option>
+                                <option value="Cashier">Thu ngân</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-5 col-md-12">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button type="button" class="btn btn-primary" onclick="filterEmployees()">
+                                    <i class="bx bx-search me-1"></i>Tìm kiếm
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
+                                    <i class="bx bx-reset me-1"></i>Reset
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="showAddEmployeeModal()">
+                                    <i class="bx bx-plus me-1"></i>Thêm nhân viên
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employees Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0">
+                        <i class="bx bx-list-ul me-2"></i>Danh sách nhân viên (@Model.Count())
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="employeesTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center">#</th>
+                                        <th>Thông tin nhân viên</th>
+                                        <th class="text-center">Username</th>
+                                        <th class="text-center">Vai trò</th>
+                                        <th class="text-center">Ngày tạo</th>
+                                        <th class="text-center">Trạng thái</th>
+                                        <th class="text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var employee in Model.OrderBy(e => e.Id))
+                                    {
+                                        <tr data-employee-id="@employee.Id">
+                                            <td class="text-center fw-bold">@employee.Id</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar-sm rounded-circle bg-light d-flex align-items-center justify-content-center">
+                                                            <i class="bx bx-user fs-5 text-primary"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <span class="fw-semibold d-block">@employee.FullName</span>
+                                                        <small class="text-muted">
+                                                            <i class="bx bx-envelope me-1"></i>@employee.Email
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark">@employee.Username</span>
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                    string roleBadgeClass = employee.Role switch
+                                                    {
+                                                        "Admin" => "bg-danger",
+                                                        "Waiter" => "bg-success",
+                                                        "Chef" => "bg-info",
+                                                        "Cashier" => "bg-warning",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                    
+                                                    string roleIcon = employee.Role switch
+                                                    {
+                                                        "Admin" => "bx-shield",
+                                                        "Waiter" => "bx-user",
+                                                        "Chef" => "bx-food-menu",
+                                                        "Cashier" => "bx-money",
+                                                        _ => "bx-user"
+                                                    };
+                                                    
+                                                    string roleText = employee.Role switch
+                                                    {
+                                                        "Admin" => "Quản trị",
+                                                        "Waiter" => "Nhân viên",
+                                                        "Chef" => "Đầu bếp",
+                                                        "Cashier" => "Thu ngân",
+                                                        _ => employee.Role
+                                                    };
+                                                }
+                                                <span class="badge @roleBadgeClass">
+                                                    <i class="bx @roleIcon me-1"></i>@roleText
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="text-muted">@employee.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-success">
+                                                    <i class="bx bx-check me-1"></i>Hoạt động
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                            onclick="viewEmployee(@employee.Id)" 
+                                                            title="Xem chi tiết">
+                                                        <i class="bx bx-show"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-warning btn-sm" 
+                                                            onclick="editEmployee(@employee.Id)"
+                                                            title="Chỉnh sửa">
+                                                        <i class="bx bx-edit"></i>
+                                                    </button>
+                                                    @if (employee.Username != "admin")
+                                                    {
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                                onclick="deleteEmployee(@employee.Id, '@employee.FullName')"
+                                                                title="Xóa nhân viên">
+                                                            <i class="bx bx-trash"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center p-5">
+                            <div class="mb-4">
+                                <i class="bx bx-group" style="font-size: 4rem; color: #e9ecef;"></i>
+                            </div>
+                            <h5 class="text-muted">Chưa có nhân viên nào</h5>
+                            <p class="text-muted">Thêm nhân viên đầu tiên để bắt đầu quản lý.</p>
+                            <button type="button" class="btn btn-primary" onclick="showAddEmployeeModal()">
+                                <i class="bx bx-plus me-1"></i>Thêm nhân viên
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Employee Modal -->
+<div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="employeeModalLabel">
+                    <i class="bx bx-user-plus me-2"></i>Thêm nhân viên mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="employeeForm">
+                    <input type="hidden" id="employeeId" value="0">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="fullName" class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="fullName" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="role" class="form-label">Vai trò <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" required>
+                                <option value="">Chọn vai trò</option>
+                                <option value="Admin">Quản trị viên</option>
+                                <option value="Waiter">Nhân viên phục vụ</option>
+                                <option value="Chef">Đầu bếp</option>
+                                <option value="Cashier">Thu ngân</option>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6" id="passwordGroup">
+                            <label for="password" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" required>
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                                    <i class="bx bx-show" id="passwordIcon"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback"></div>
+                            <small class="form-text text-muted">Tối thiểu 6 ký tự</small>
+                        </div>
+                        <div class="col-md-6" id="confirmPasswordGroup">
+                            <label for="confirmPassword" class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveEmployee()">
+                    <i class="bx bx-save me-1"></i>Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Employee Modal -->
+<div class="modal fade" id="viewEmployeeModal" tabindex="-1" aria-labelledby="viewEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewEmployeeModalLabel">
+                    <i class="bx bx-user me-2"></i>Thông tin nhân viên
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="employeeDetailContent">
+                <!-- Employee details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Filter employees
+        function filterEmployees() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+            
+            const rows = document.querySelectorAll('#employeesTable tbody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const employeeInfo = row.cells[1].textContent.toLowerCase();
+                const username = row.cells[2].textContent.toLowerCase();
+                const role = row.cells[3].textContent;
+                
+                let show = true;
+                
+                if (searchTerm && !employeeInfo.includes(searchTerm) && !username.includes(searchTerm)) {
+                    show = false;
+                }
+                
+                if (roleFilter && !role.includes(roleFilter)) {
+                    show = false;
+                }
+                
+                row.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
+            });
+            
+            updateVisibleCount(visibleCount);
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('roleFilter').value = '';
+            
+            const rows = document.querySelectorAll('#employeesTable tbody tr');
+            rows.forEach(row => row.style.display = '');
+            
+            updateVisibleCount(rows.length);
+        }
+
+        // Update visible count
+        function updateVisibleCount(count) {
+            const titleElement = document.querySelector('.card-title');
+            const totalCount = document.querySelectorAll('#employeesTable tbody tr').length;
+            titleElement.innerHTML = `<i class="bx bx-list-ul me-2"></i>Danh sách nhân viên (${count}/${totalCount})`;
+        }
+
+        // Show add employee modal
+        function showAddEmployeeModal() {
+            document.getElementById('employeeModalLabel').innerHTML = '<i class="bx bx-user-plus me-2"></i>Thêm nhân viên mới';
+            document.getElementById('employeeForm').reset();
+            document.getElementById('employeeId').value = '0';
+            document.getElementById('passwordGroup').style.display = 'block';
+            document.getElementById('confirmPasswordGroup').style.display = 'block';
+            document.getElementById('password').required = true;
+            document.getElementById('confirmPassword').required = true;
+            
+            const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
+            modal.show();
+        }
+
+        // View employee
+        function viewEmployee(employeeId) {
+            // Simulate loading employee data
+            document.getElementById('employeeDetailContent').innerHTML = `
+                <div class="text-center p-4">
+                    <div class="avatar-lg rounded-circle bg-primary bg-gradient d-flex align-items-center justify-content-center mx-auto mb-3">
+                        <i class="bx bx-user text-white fs-1"></i>
+                    </div>
+                    <h5 class="mb-3">Thông tin chi tiết nhân viên #${employeeId}</h5>
+                    <div class="row text-start">
+                        <div class="col-6">
+                            <strong>Họ tên:</strong><br>
+                            <span class="text-muted">Nguyễn Văn A</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Username:</strong><br>
+                            <span class="text-muted">nguyenvana</span>
+                        </div>
+                        <div class="col-6 mt-3">
+                            <strong>Email:</strong><br>
+                            <span class="text-muted">nguyenvana@email.com</span>
+                        </div>
+                        <div class="col-6 mt-3">
+                            <strong>Vai trò:</strong><br>
+                            <span class="badge bg-success">Nhân viên</span>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <strong>Ngày tạo:</strong><br>
+                            <span class="text-muted">${new Date().toLocaleDateString('vi-VN')}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('viewEmployeeModal'));
+            modal.show();
+        }
+
+        // Edit employee
+        function editEmployee(employeeId) {
+            document.getElementById('employeeModalLabel').innerHTML = '<i class="bx bx-user-edit me-2"></i>Chỉnh sửa nhân viên';
+            document.getElementById('employeeId').value = employeeId;
+            document.getElementById('passwordGroup').style.display = 'none';
+            document.getElementById('confirmPasswordGroup').style.display = 'none';
+            document.getElementById('password').required = false;
+            document.getElementById('confirmPassword').required = false;
+            
+            // Load employee data (simulate)
+            document.getElementById('fullName').value = 'Nguyễn Văn A';
+            document.getElementById('username').value = 'nguyenvana';
+            document.getElementById('email').value = 'nguyenvana@email.com';
+            document.getElementById('role').value = 'Waiter';
+            
+            const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
+            modal.show();
+        }
+
+        // Delete employee
+        function deleteEmployee(employeeId, employeeName) {
+            if (!confirm(`Bạn có chắc muốn xóa nhân viên "${employeeName}"?\nHành động này không thể hoàn tác.`)) {
+                return;
+            }
+
+            // Simulate delete
+            showNotification(`Đã xóa nhân viên "${employeeName}" thành công`, 'success');
+            
+            // Remove row from table
+            const row = document.querySelector(`tr[data-employee-id="${employeeId}"]`);
+            if (row) {
+                row.style.opacity = '0.5';
+                setTimeout(() => {
+                    row.remove();
+                    updateVisibleCount(document.querySelectorAll('#employeesTable tbody tr:not([style*="display: none"])').length);
+                }, 500);
+            }
+        }
+
+        // Save employee
+        function saveEmployee() {
+            const form = document.getElementById('employeeForm');
+            const employeeId = document.getElementById('employeeId').value;
+            const isEditing = employeeId !== '0';
+            
+            // Basic validation
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            // Password validation for new employee
+            if (!isEditing) {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (password.length < 6) {
+                    document.getElementById('password').classList.add('is-invalid');
+                    document.querySelector('#password + .input-group + .invalid-feedback').textContent = 'Mật khẩu phải có ít nhất 6 ký tự';
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    document.getElementById('confirmPassword').classList.add('is-invalid');
+                    document.querySelector('#confirmPassword + .invalid-feedback').textContent = 'Xác nhận mật khẩu không khớp';
+                    return;
+                }
+            }
+            
+            // Simulate save
+            const action = isEditing ? 'cập nhật' : 'thêm mới';
+            showNotification(`Đã ${action} nhân viên thành công`, 'success');
+            
+            // Close modal and refresh
+            const modal = bootstrap.Modal.getInstance(document.getElementById('employeeModal'));
+            modal.hide();
+            
+            if (!isEditing) {
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const passwordIcon = document.getElementById('passwordIcon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                passwordIcon.className = 'bx bx-hide';
+            } else {
+                passwordField.type = 'password';
+                passwordIcon.className = 'bx bx-show';
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', filterEmployees);
+        document.getElementById('roleFilter').addEventListener('change', filterEmployees);
+
+        // Form validation
+        document.getElementById('password').addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+        
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+
+    <style>
+        .avatar-sm {
+            height: 2.5rem;
+            width: 2.5rem;
+        }
+        
+        .avatar-lg {
+            height: 4rem;
+            width: 4rem;
+        }
+        
+        .stats-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        .avatar-md {
+            height: 3.5rem;
+            width: 3.5rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .stats-card:hover .avatar-md {
+            transform: scale(1.05);
+        }
+        
+        .table th {
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 0.75rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .table td {
+            padding: 1rem 0.75rem;
+            vertical-align: middle;
+        }
+        
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+        
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.5em 0.75em;
+            font-weight: 500;
+        }
+        
+        .btn-group .btn {
+            border-radius: 0.375rem;
+            margin: 0 1px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-group .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 0.5rem;
+            border: 1px solid #e3e6f0;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid #f1f3f4;
+            padding: 1.5rem;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .input-group-text {
+            border-color: #e3e6f0;
+            background-color: #f8f9fa;
+        }
+        
+        .was-validated .form-control:invalid,
+        .was-validated .form-select:invalid {
+            border-color: #dc3545;
+        }
+        
+        .was-validated .form-control:valid,
+        .was-validated .form-select:valid {
+            border-color: #198754;
+        }
+    </style>
+}
+
+@Html.AntiForgeryToken()

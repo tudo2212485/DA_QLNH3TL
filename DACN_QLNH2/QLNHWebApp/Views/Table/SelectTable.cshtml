@@ -1,0 +1,468 @@
+@model List<QLNHWebApp.Models.Table>
+@{
+    ViewData["Title"] = "Chọn Bàn";
+    var floor = ViewBag.Floor as string;
+    var guests = ViewBag.Guests as int?;
+    var bookingDate = ViewBag.BookingDate as DateTime?;
+    var bookingTime = ViewBag.BookingTime as string;
+    var bookedTableIds = ViewBag.BookedTableIds as List<int> ?? new List<int>();
+}
+
+<!-- SweetAlert2 for beautiful alerts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* Card bàn với viền đẹp */
+    .table-card {
+        border: 3px solid #dee2e6;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .table-card.available {
+        border-color: #28a745;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
+    }
+
+    .table-card.booked {
+        border-color: #dc3545;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15);
+    }
+
+    .table-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    /* Preview hình ảnh khi hover */
+    .table-preview {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+    }
+
+    .table-card:hover .table-preview {
+        opacity: 0.15;
+    }
+
+    /* Nút chọn bàn với viền đậm */
+    .btn-select-table {
+        border: 2px solid #007bff;
+        font-weight: 600;
+        padding: 8px 20px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-select-table:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+
+    /* Icon con mắt với tooltip */
+    .eye-icon-btn {
+        position: relative;
+        border: 2px solid #17a2b8;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .eye-icon-btn:hover {
+        background-color: #17a2b8;
+        color: white !important;
+        transform: scale(1.1);
+    }
+
+    /* Badge trạng thái */
+    .status-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+
+    /* Image preview modal */
+    .image-preview-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        z-index: 9999;
+        transition: transform 0.3s ease;
+        pointer-events: none;
+        max-width: 400px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .image-preview-modal.show {
+        transform: translate(-50%, -50%) scale(1);
+        pointer-events: auto;
+    }
+
+    .image-preview-modal img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-table me-2"></i>
+                        Chọn Bàn - @floor
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>Số khách:</strong> @guests người
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Ngày:</strong> @bookingDate?.ToString("dd/MM/yyyy")
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Giờ:</strong> @bookingTime
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Tầng:</strong> @floor
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        @foreach (var table in Model)
+                        {
+                            var isBooked = bookedTableIds.Contains(table.Id);
+                            var imageUrl = string.IsNullOrEmpty(table.ImageUrl) ? "/images/placeholder-dish.jpg" :
+                            table.ImageUrl;
+                            <div class="col-md-4 col-lg-3 mb-4">
+                                <div class="card h-100 table-card @(isBooked ? "booked" : "available")">
+                                    <!-- Badge trạng thái góc phải -->
+                                    @if (isBooked)
+                                    {
+                                        <span class="badge bg-danger status-badge">
+                                            <i class="fas fa-lock me-1"></i>Đã đặt
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success status-badge">
+                                            <i class="fas fa-check me-1"></i>Trống
+                                        </span>
+                                    }
+
+                                    <!-- Background preview khi hover -->
+                                    <div class="table-preview" style="background-image: url('@imageUrl');"></div>
+
+                                    <div class="card-body text-center position-relative" style="z-index: 2;">
+                                        <div class="mb-3">
+                                            @if (isBooked)
+                                            {
+                                                <i class="fas fa-times-circle fa-3x text-danger"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-utensils fa-3x text-success"></i>
+                                            }
+                                        </div>
+
+                                        <h5 class="card-title fw-bold mb-2">@table.Name</h5>
+
+                                        <p class="card-text mb-3">
+                                            <small class="text-muted d-block mb-1">@table.Description</small>
+                                            <span class="badge bg-info text-white">
+                                                <i class="fas fa-users me-1"></i>@table.Capacity người
+                                            </span>
+                                        </p>
+
+                                        <div class="d-flex justify-content-center gap-2 mt-3">
+                                            <!-- Nút xem preview hình ảnh -->
+                                            <button type="button" class="btn btn-sm eye-icon-btn text-info"
+                                                onclick="showImagePreview('@imageUrl', '@table.Name')"
+                                                title="Xem hình ảnh bàn" data-bs-toggle="tooltip">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+
+                                            @if (!isBooked)
+                                            {
+                                                <!-- Nút chọn bàn -->
+                                                <button type="button" class="btn btn-sm btn-primary btn-select-table"
+                                                    onclick="selectTable(@table.Id, '@table.Name', @table.Capacity)">
+                                                    <i class="fas fa-check me-1"></i>
+                                                    Chọn bàn
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn btn-sm btn-secondary" disabled>
+                                                    <i class="fas fa-ban me-1"></i>
+                                                    Không khả dụng
+                                                </button>
+                                            }
+                                        </div>
+
+                                        <!-- Link xem chi tiết đầy đủ -->
+                                        <div class="mt-2">
+                                            <a href="javascript:void(0)" class="text-decoration-none small"
+                                                onclick="viewTableDetails(@table.Id)">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Xem chi tiết đầy đủ
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <h5>Không có bàn phù hợp</h5>
+                            <p class="text-muted">Không tìm thấy bàn nào phù hợp với số lượng khách của bạn.</p>
+                            <a href="@Url.Action("SelectFloor", "Table", new { guests = guests })"
+                                class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Chọn tầng khác
+                            </a>
+                        </div>
+                    }
+
+                    <div class="text-center mt-4">
+                        <a href="@Url.Action("SelectFloor", "Table", new { guests = guests })"
+                            class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Chọn tầng khác
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chọn bàn -->
+<div class="modal fade" id="selectTableModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận đặt bàn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="bookingForm">
+                    <input type="hidden" id="selectedTableId" name="tableId">
+                    <input type="hidden" id="selectedGuests" name="guests" value="@guests">
+                    <input type="hidden" id="selectedDate" name="bookingDate"
+                        value="@bookingDate?.ToString("yyyy-MM-dd")">
+                    <input type="hidden" id="selectedTime" name="bookingTime" value="@bookingTime">
+
+                    <div class="mb-3">
+                        <label class="form-label">Bàn đã chọn:</label>
+                        <p class="form-control-plaintext" id="selectedTableName"></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="customerName" class="form-label">Tên khách hàng <span
+                                class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="customerName" name="customerName" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="note" class="form-label">Ghi chú</label>
+                        <textarea class="form-control" id="note" name="note" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="confirmBooking()">
+                    <i class="fas fa-check me-1"></i>
+                    Xác nhận đặt bàn
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xem chi tiết bàn -->
+<div class="modal fade" id="tableDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết bàn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="tableDetailsContent">
+                <!-- Nội dung sẽ được load bằng AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal preview hình ảnh nhanh -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="imagePreviewTitle">Hình ảnh bàn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <img id="previewImage" src="" class="img-fluid" alt="Preview"
+                    style="max-height: 500px; width: 100%; object-fit: cover;">
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize Bootstrap tooltips
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+
+    // Hiển thị preview hình ảnh bàn
+    function showImagePreview(imageUrl, tableName) {
+        document.getElementById('previewImage').src = imageUrl;
+        document.getElementById('imagePreviewTitle').textContent = 'Hình ảnh ' + tableName;
+
+        var modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+        modal.show();
+    }
+
+    function selectTable(tableId, tableName, capacity) {
+        document.getElementById('selectedTableId').value = tableId;
+        document.getElementById('selectedTableName').textContent = tableName + ' (Sức chứa: ' + capacity + ' người)';
+
+        var modal = new bootstrap.Modal(document.getElementById('selectTableModal'));
+        modal.show();
+    }
+
+    function viewTableDetails(tableId) {
+        // Hiển thị loading
+        document.getElementById('tableDetailsContent').innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Đang tải thông tin bàn...</p>
+            </div>
+        `;
+
+        var modal = new bootstrap.Modal(document.getElementById('tableDetailsModal'));
+        modal.show();
+
+        fetch('@Url.Action("Details", "Table")/' + tableId)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('tableDetailsContent').innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById('tableDetailsContent').innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <p class="text-danger">Có lỗi xảy ra khi tải chi tiết bàn!</p>
+                    </div>
+                `;
+            });
+    }
+
+    function confirmBooking() {
+        var form = document.getElementById('bookingForm');
+        var formData = new FormData(form);
+
+        // Validate form
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        // Disable button to prevent double submission
+        var submitBtn = event.target;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...';
+
+        fetch('@Url.Action("BookTable", "Table")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                tableId: formData.get('tableId'),
+                customerName: formData.get('customerName'),
+                phone: formData.get('phone'),
+                bookingDate: formData.get('bookingDate'),
+                bookingTime: formData.get('bookingTime'),
+                guests: formData.get('guests'),
+                note: formData.get('note')
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message with animation
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đặt bàn thành công!',
+                        text: data.message || 'Cảm ơn bạn đã đặt bàn tại nhà hàng chúng tôi.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = '@Url.Action("Index", "Home")';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Không thể đặt bàn',
+                        text: data.message || 'Có lỗi xảy ra, vui lòng thử lại.',
+                        confirmButtonText: 'OK'
+                    });
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check me-1"></i>Xác nhận đặt bàn';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi đặt bàn! Vui lòng thử lại.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check me-1"></i>Xác nhận đặt bàn';
+            });
+    }
+</script>

@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # ASP.NET Core Web Application
+  qlnh-webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qlnh-restaurant-app
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/QLNHDB.db
+    volumes:
+      # Mount volume for SQLite database persistence
+      - ./data:/app/data
+      # Mount volume for uploaded images (if any)
+      - ./uploads:/app/wwwroot/uploads
+    depends_on:
+      - adminer
+    networks:
+      - qlnh-network
+
+  # Adminer for database management (alternative to Prisma Studio)
+  adminer:
+    image: adminer:latest
+    container_name: qlnh-adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: qlnh-webapp
+    networks:
+      - qlnh-network
+
+  # SQLite Web GUI for database management
+  sqlite-web:
+    image: coleifer/sqlite-web
+    container_name: qlnh-sqlite-web
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./data:/data
+    command: sqlite_web -H 0.0.0.0 -x /data/QLNHDB.db
+    depends_on:
+      - qlnh-webapp
+    networks:
+      - qlnh-network
+
+networks:
+  qlnh-network:
+    driver: bridge
+
+volumes:
+  qlnh-data:
+    driver: local
