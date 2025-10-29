@@ -477,7 +477,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
               </div>
 
               <div className="space-y-3">
-                <Button
+                {/* Nút "Lưu thông tin và tiếp tục chọn món" đã được ẩn để đơn giản hóa flow */}
+                {/* <Button
                   type="button"
                   variant="outline"
                   className="w-full"
@@ -486,9 +487,9 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
                   disabled={loading}
                 >
                   Lưu thông tin và tiếp tục chọn món
-                </Button>
+                </Button> */}
 
-                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                <Button type="submit" className="w-full" size="lg" disabled={loading || !selectedTable}>
                   {loading ? 'Đang xử lý...' : 'Xác nhận đặt bàn'}
                 </Button>
               </div>

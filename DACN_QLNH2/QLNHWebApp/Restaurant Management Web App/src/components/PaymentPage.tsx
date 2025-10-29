@@ -39,7 +39,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
     try {
       // === GỌI API ĐỂ LƯU BOOKING VÀO DATABASE ===
       console.log('📤 Saving booking to database...');
-      
+
       const bookingResponse = await fetch('/api/tableapi/BookTable', {
         method: 'POST',
         headers: {
@@ -93,7 +93,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
 
       toast.success('Thanh toán thành công! Cảm ơn bạn đã đặt bàn.');
       console.log('✅ Payment successful! Booking saved to database with ID:', bookingResult.bookingId);
-      
+
       // Redirect to success page or home
       setTimeout(() => {
         onPageChange('home');
@@ -216,9 +216,9 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
               </div>
             )}
 
-            <Button 
-              onClick={handlePayment} 
-              className="w-full mt-6" 
+            <Button
+              onClick={handlePayment}
+              className="w-full mt-6"
               size="lg"
               disabled={isProcessing}
             >
@@ -252,7 +252,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
                 </span>
                 <span className="font-medium">{order.customerName}</span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="flex items-center text-gray-600">
                   <Phone className="h-4 w-4 mr-2" />
@@ -260,7 +260,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
                 </span>
                 <span className="font-medium">{order.phone}</span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="flex items-center text-gray-600">
                   <Calendar className="h-4 w-4 mr-2" />
@@ -268,7 +268,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
                 </span>
                 <span className="font-medium">{order.date}</span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="flex items-center text-gray-600">
                   <Clock className="h-4 w-4 mr-2" />
@@ -276,7 +276,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
                 </span>
                 <span className="font-medium">{order.time}</span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="flex items-center text-gray-600">
                   <Users className="h-4 w-4 mr-2" />
@@ -284,7 +284,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
                 </span>
                 <span className="font-medium">{order.guests} khách</span>
               </div>
-              
+
               {order.note && (
                 <div className="border-t pt-3">
                   <p className="text-sm text-gray-600">
@@ -314,7 +314,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
                   </div>
                 </div>
               ))}
-              
+
               <div className="border-t pt-3">
                 <div className="flex justify-between font-bold text-lg">
                   <span>Tổng cộng:</span>
