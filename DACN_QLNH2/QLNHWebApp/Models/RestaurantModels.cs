@@ -24,9 +24,8 @@ namespace QLNHWebApp.Models
         [StringLength(50, ErrorMessage = "Danh mục không quá 50 ký tự")]
         public string Category { get; set; } = string.Empty;
         
-        [Url(ErrorMessage = "URL hình ảnh không hợp lệ")]
         [StringLength(500, ErrorMessage = "URL không quá 500 ký tự")]
-        public string ImageUrl { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
         
         [JsonIgnore]
         public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
