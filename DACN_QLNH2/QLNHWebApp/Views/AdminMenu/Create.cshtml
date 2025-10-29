@@ -401,7 +401,7 @@
                                        class="form-control form-control-modern" 
                                        placeholder="0"
                                        min="0"
-                                       step="1000"
+                                       step="1"
                                        required>
                                 <span class="input-group-text" style="border: 2px solid #e5e7eb; border-left: none; border-radius: 0 10px 10px 0; background: #f9fafb; font-weight: 600; color: #667eea;">₫</span>
                             </div>
@@ -538,25 +538,6 @@
                 previewImage(fileInput);
             }
         });
-
-        // Format price input
-        const priceInput = document.querySelector('input[name="Price"]');
-        if (priceInput) {
-            priceInput.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/[^\d]/g, '');
-                if (value) {
-                    e.target.value = parseInt(value).toLocaleString('vi-VN');
-                }
-            });
-
-            // Remove formatting before submit
-            document.getElementById('menuForm').addEventListener('submit', function(e) {
-                const rawValue = priceInput.value.replace(/[^\d]/g, '');
-                priceInput.value = rawValue;
-                
-                console.log('📤 Submitting form with file:', selectedFile ? selectedFile.name : 'No file');
-            });
-        }
 
         // Form validation feedback
         const form = document.getElementById('menuForm');
