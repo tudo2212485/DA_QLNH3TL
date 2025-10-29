@@ -194,26 +194,19 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('🎯 handleSubmit called!');
-    console.log('Form data:', formData);
-    console.log('Selected table:', selectedTable);
-
     // Validate required fields
     if (!formData.customerName || !formData.phone || !formData.date || !formData.time || !formData.guests) {
-      console.log('❌ Missing required fields');
       toast.error('Vui lòng điền đầy đủ thông tin bắt buộc');
       return;
     }
 
     // Check if table is selected
     if (!selectedTable) {
-      console.log('❌ No table selected');
       toast.error('Vui lòng chọn bàn trước khi đặt bàn');
       return;
     }
 
     setLoading(true);
-    console.log('📤 Sending booking request...');
 
     try {
       // First, create table booking WITH order items
@@ -243,7 +236,6 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
       }
 
       const bookingResult = await bookingResponse.json();
-      console.log('✅ BookTable API response:', bookingResult);
 
       if (cartItems.length > 0) {
         // Create order with items and link to table booking
@@ -477,8 +469,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
               </div>
 
               <div className="space-y-3">
-                {/* Nút "Lưu thông tin và tiếp tục chọn món" đã được ẩn để đơn giản hóa flow */}
-                {/* <Button
+                <Button
                   type="button"
                   variant="outline"
                   className="w-full"
@@ -487,9 +478,9 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
                   disabled={loading}
                 >
                   Lưu thông tin và tiếp tục chọn món
-                </Button> */}
+                </Button>
 
-                <Button type="submit" className="w-full" size="lg" disabled={loading || !selectedTable}>
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
                   {loading ? 'Đang xử lý...' : 'Xác nhận đặt bàn'}
                 </Button>
               </div>
