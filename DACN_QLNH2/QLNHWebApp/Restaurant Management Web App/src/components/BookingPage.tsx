@@ -81,8 +81,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
       try {
         const response = await fetch(`/api/tableapi/GetTablesByFloor?floor=${encodeURIComponent(floor)}&guests=${formData.guests}`);
         if (response.ok) {
-          const tables = await response.json();
-          counts[floor] = tables.length || 0;
+          const result = await response.json();
+          counts[floor] = result.tables?.length || 0;
         } else {
           counts[floor] = 0;
         }
@@ -171,7 +171,11 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
     try {
       const response = await fetch(`/api/tableapi/GetTablesByFloor?floor=${encodeURIComponent(floor)}&guests=${formData.guests}`);
       if (response.ok) {
-        const tables = await response.json();
+        const result = await response.json();
+        const tables = result.tables || [];
+
+        console.log('API Response:', result);
+        console.log('Tables array:', tables);
 
         // Check availability for each table
         const tablesWithAvailability = await Promise.all(
@@ -184,6 +188,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
           })
         );
 
+        console.log('Tables with availability:', tablesWithAvailability);
         setAvailableTables(tablesWithAvailability);
       } else {
         toast.error('Không thể tải danh sách bàn');
