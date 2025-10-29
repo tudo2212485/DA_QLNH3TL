@@ -33,30 +33,66 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
     if (!order) return;
 
     setIsProcessing(true);
+    console.log('💳 handlePayment called!');
+    console.log('Order data:', order);
 
     try {
+      // === GỌI API ĐỂ LƯU BOOKING VÀO DATABASE ===
+      console.log('📤 Saving booking to database...');
+      
+      const bookingResponse = await fetch('/api/tableapi/BookTable', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          TableId: order.tableId,
+          CustomerName: order.customerName,
+          Phone: order.phone,
+          BookingDate: order.date,
+          BookingTime: order.time,
+          Guests: order.guests,
+          Note: order.note || '',
+          OrderItems: order.orderItems?.map((item: any) => ({
+            MenuItemId: item.menuItem.id,
+            Quantity: item.quantity
+          })) || []
+        })
+      });
+
+      const bookingResult = await bookingResponse.json();
+      console.log('✅ BookTable API response:', bookingResult);
+
+      if (!bookingResponse.ok || !bookingResult.success) {
+        throw new Error(bookingResult.message || 'Không thể lưu booking vào database');
+      }
+
       // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Update order with payment method and status
       const updatedOrder = {
         ...order,
         paymentMethod,
-        status: 'confirmed' as const
+        status: 'confirmed' as const,
+        bookingId: bookingResult.bookingId
       };
 
-      // Update in localStorage
+      // Update in localStorage (for offline access)
       const existingOrders = JSON.parse(localStorage.getItem('restaurant_orders') || '[]');
       const orderIndex = existingOrders.findIndex((o: Order) => o.id === order.id);
       if (orderIndex !== -1) {
         existingOrders[orderIndex] = updatedOrder;
-        localStorage.setItem('restaurant_orders', JSON.stringify(existingOrders));
+      } else {
+        existingOrders.push(updatedOrder);
       }
+      localStorage.setItem('restaurant_orders', JSON.stringify(existingOrders));
 
       // Clear current order
       localStorage.removeItem('current_order');
 
       toast.success('Thanh toán thành công! Cảm ơn bạn đã đặt bàn.');
+      console.log('✅ Payment successful! Booking saved to database with ID:', bookingResult.bookingId);
       
       // Redirect to success page or home
       setTimeout(() => {
@@ -64,6 +100,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ onPageChange }) => {
       }, 1500);
 
     } catch (error) {
+      console.error('❌ Payment error:', error);
       toast.error('Có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại.');
     } finally {
       setIsProcessing(false);

@@ -193,7 +193,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     console.log('🎯 handleSubmit called!');
     console.log('Form data:', formData);
     console.log('Selected table:', selectedTable);
