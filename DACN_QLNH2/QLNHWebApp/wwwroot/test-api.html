@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Test API Connection</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Test API Connection</h1>
+    <p>Page URL: <strong id="pageUrl"></strong></p>
+
+    <button onclick="testMenuAPI()">Test Menu API</button>
+    <button onclick="testTablesAPI()">Test Tables API</button>
+    <button onclick="testBooking()">Test Create Booking</button>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('pageUrl').textContent = window.location.href;
+
+        async function testMenuAPI() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>⏳ Đang gọi /api/menuapi...</p>';
+
+            try {
+                const response = await fetch('/api/menuapi');
+                const data = await response.json();
+                result.innerHTML = `<p class="success">✅ Thành công! Tìm thấy ${data.length} món ăn</p>` +
+                    `<pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>`;
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Lỗi: ${error.message}</p>`;
+            }
+        }
+
+        async function testTablesAPI() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>⏳ Đang gọi /api/tableapi/GetAvailableTables...</p>';
+
+            try {
+                const response = await fetch('/api/tableapi/GetAvailableTables?guests=4');
+                const data = await response.json();
+                result.innerHTML = `<p class="success">✅ Thành công! Tìm thấy ${data.length} bàn</p>` +
+                    `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Lỗi: ${error.message}</p>`;
+            }
+        }
+
+        async function testBooking() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>⏳ Đang tạo booking test...</p>';
+
+            const testData = {
+                tableId: 1,
+                customerName: "Test User",
+                phone: "0123456789",
+                bookingDate: "2025-10-30",
+                bookingTime: "18:00",
+                guests: 4,
+                note: "Test booking from API test page",
+                orderItems: []
+            };
+
+            try {
+                const response = await fetch('/api/tableapi/BookTable', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                const data = await response.json();
+                result.innerHTML = `<p class="success">✅ Response nhận được:</p>` +
+                    `<pre>${JSON.stringify(data, null, 2)}</pre>` +
+                    `<p>Bây giờ kiểm tra trang <a href="/AdminBooking" target="_blank">Admin Booking</a></p>`;
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Lỗi: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+
+</html>
