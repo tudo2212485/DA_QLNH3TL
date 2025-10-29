@@ -4,153 +4,454 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    .modern-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .modern-card:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-header-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px 16px 0 0 !important;
+        padding: 20px 24px;
+        border: none;
+    }
+
+    .card-header-modern h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .image-upload-area {
+        position: relative;
+        border: 3px dashed #e0e7ff;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .image-upload-area:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #f0f4ff 0%, #e8edff 100%);
+        transform: translateY(-2px);
+    }
+
+    .image-upload-area.has-image {
+        border-color: #10b981;
+        background: white;
+        padding: 20px;
+    }
+
+    #imagePreview {
+        max-height: 280px;
+        max-width: 100%;
+        object-fit: contain;
+        border-radius: 12px;
+        display: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    #imagePreview.show {
+        display: block;
+    }
+
+    .upload-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .upload-placeholder.hidden {
+        display: none;
+    }
+
+    .upload-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 32px;
+        margin-bottom: 10px;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .form-label-modern {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .form-control-modern {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px 16px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .form-control-modern:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-select-modern {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px 16px;
+        transition: all 0.3s ease;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23667eea' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    }
+
+    .form-select-modern:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-modern-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 12px 32px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-modern-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+    .btn-modern-secondary {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px 32px;
+        font-weight: 600;
+        color: #374151;
+        transition: all 0.3s ease;
+    }
+
+    .btn-modern-secondary:hover {
+        border-color: #667eea;
+        color: #667eea;
+        background: #f8f9ff;
+    }
+
+    .info-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: #e0e7ff;
+        color: #4f46e5;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+
+    .category-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 4px;
+    }
+
+    .category-chip:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+        transform: translateY(-2px);
+    }
+
+    .change-image-btn {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(102, 126, 234, 0.95);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 10px 24px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        display: none;
+    }
+
+    .change-image-btn.show {
+        display: block;
+    }
+
+    .change-image-btn:hover {
+        background: rgba(118, 75, 162, 0.95);
+        transform: translateX(-50%) translateY(-2px);
+    }
+
+    .required-star {
+        color: #ef4444;
+        margin-left: 4px;
+    }
+
+    .breadcrumb-modern {
+        background: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 24px;
+    }
+
+    .breadcrumb-modern .breadcrumb {
+        margin: 0;
+    }
+
+    .breadcrumb-modern .breadcrumb-item a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .breadcrumb-modern .breadcrumb-item.active {
+        color: #6b7280;
+    }
+
+    .alert-modern {
+        border: none;
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .file-info {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-top: 8px;
+    }
+</style>
+
+<div class="breadcrumb-modern">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item">
-                <a asp-controller="AdminMenu" asp-action="Index">Quản lý thực đơn</a>
+                <a asp-controller="AdminMenu" asp-action="Index">
+                    <i class='bx bx-restaurant'></i> Quản lý thực đơn
+                </a>
             </li>
             <li class="breadcrumb-item active">Thêm món mới</li>
         </ol>
     </nav>
 </div>
 
-<div class="row">
-    <!-- Cột trái: Upload ảnh -->
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">Ảnh mặt hàng</h6>
-            </div>
-            <div class="card-body text-center">
-                <div class="mb-3">
-                    <img id="imagePreview"
-                        src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOWZhIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNo4buNbiDhuJ5uIGjhu5NnPC90ZXh0Pgo8L3N2Zz4K"
-                        alt="Preview" class="img-fluid rounded"
-                        style="max-height: 200px; width: 100%; object-fit: cover; border: 2px dashed #dee2e6;">
-                </div>
-                <button type="button" class="btn btn-outline-primary"
-                    onclick="document.getElementById('imageFile').click()">
-                    <i class="fas fa-camera me-1"></i>
-                    Chọn ảnh mặt hàng
-                </button>
-                <input type="file" class="d-none" id="imageFile" name="imageFile" accept="image/*"
-                    onchange="previewImage(this)">
-                <div class="mt-3 small text-muted">
-                    <div>Dung lượng file tối đa 1 MB</div>
-                    <div>Định dạng: JPEG, PNG</div>
-                    <div>Nên sử dụng hình ảnh có tỉ lệ 1:1</div>
-                </div>
-            </div>
+<form asp-action="Create" method="post" enctype="multipart/form-data" id="menuForm">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-modern alert-dismissible fade show" role="alert">
+            <i class='bx bx-error-circle' style="font-size: 1.2rem; vertical-align: middle;"></i>
+            <strong>Lỗi!</strong> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-    </div>
+    }
 
-    <!-- Cột phải: Form thông tin -->
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">Thông tin mặt hàng</h6>
-            </div>
-            <div class="card-body">
-                <form asp-action="Create" method="post" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                    @if (TempData["ErrorMessage"] != null)
-                    {
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            @TempData["ErrorMessage"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    }
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Name" class="form-label">Tên mặt hàng (*)</label>
-                            <input asp-for="Name" class="form-control" placeholder="VD: Cá hồi nướng muối ớt">
-                            <span asp-validation-for="Name" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Category" class="form-label">Loại mặt hàng (*)</label>
-                            <div class="input-group">
-                                <select asp-for="Category" class="form-select">
-                                    <option value="">--Chọn loại--</option>
-                                    <option value="Khai vị">Khai vị</option>
-                                    <option value="Món chính">Món chính</option>
-                                    <option value="Tráng miệng">Tráng miệng</option>
-                                    <option value="Đồ uống">Đồ uống</option>
-                                    <option value="Món lẩu">Món lẩu</option>
-                                    <option value="Món nướng">Món nướng</option>
-                                    <option value="Món hải sản">Món hải sản</option>
-                                    <option value="Món chay">Món chay</option>
-                                </select>
-                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
-                                    data-bs-target="#addCategoryModal">
-                                    <i class="fas fa-plus"></i>
-                                </button>
+    <div class="row g-4">
+        <!-- Cột trái: Upload ảnh -->
+        <div class="col-lg-4">
+            <div class="modern-card">
+                <div class="card-header-modern">
+                    <h5>
+                        <i class='bx bx-image-add'></i>
+                        Hình ảnh món ăn
+                    </h5>
+                </div>
+                <div class="card-body" style="padding: 24px;">
+                    <div class="image-upload-area" id="uploadArea" onclick="document.getElementById('imageFile').click()">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <div class="upload-icon">
+                                <i class='bx bx-cloud-upload'></i>
                             </div>
-                            <span asp-validation-for="Category" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Đơn vị tính (*)</label>
-                            <div class="input-group">
-                                <select class="form-select" name="unit">
-                                    <option value="">--Chọn đơn vị--</option>
-                                    <option value="Phần">Phần</option>
-                                    <option value="Đĩa">Đĩa</option>
-                                    <option value="Ly">Ly</option>
-                                    <option value="Chai">Chai</option>
-                                    <option value="Lon">Lon</option>
-                                </select>
-                                <button type="button" class="btn btn-outline-primary">
-                                    <i class="fas fa-plus"></i>
-                                </button>
+                            <div>
+                                <h6 style="color: #374151; font-weight: 600; margin-bottom: 8px;">
+                                    Tải ảnh món ăn lên
+                                </h6>
+                                <p style="color: #6b7280; margin: 0; font-size: 0.9rem;">
+                                    Nhấp để chọn hoặc kéo thả ảnh vào đây
+                                </p>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Description" class="form-label">Ghi chú</label>
-                            <input asp-for="Description" class="form-control" placeholder="VD: Được tùy chọn">
-                        </div>
-                    </div>
-
-                    <!-- Phần giá -->
-                    <div class="card mt-3">
-                        <div class="card-header">
-                            <h6 class="mb-0">Giá mặt hàng</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label asp-for="Price" class="form-label">Giá bán (*)</label>
-                                    <div class="input-group">
-                                        <input asp-for="Price" class="form-control" type="number" min="0"
-                                            placeholder="0" step="1">
-                                        <span class="input-group-text">đ</span>
-                                    </div>
-                                    <span asp-validation-for="Price" class="text-danger"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end mt-4">
-                        <a asp-controller="AdminMenu" asp-action="Index" class="btn btn-outline-secondary me-2">
-                            <i class="fas fa-arrow-left me-1"></i>
-                            Quay lại
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i>
-                            Lưu lại
+                        <img id="imagePreview" alt="Preview">
+                        <button type="button" class="change-image-btn" id="changeImageBtn" onclick="event.stopPropagation(); document.getElementById('imageFile').click()">
+                            <i class='bx bx-refresh'></i> Đổi ảnh khác
                         </button>
                     </div>
-                </form>
+                    
+                    <!-- FILE INPUT - QUAN TRỌNG: Phải nằm TRONG form -->
+                    <input type="file" 
+                           class="d-none" 
+                           id="imageFile" 
+                           name="imageFile" 
+                           accept="image/jpeg,image/jpg,image/png"
+                           onchange="previewImage(this)">
+
+                    <div class="mt-3 text-center">
+                        <div class="info-badge">
+                            <i class='bx bx-info-circle'></i>
+                            Tối đa 1 MB
+                        </div>
+                        <div class="info-badge">
+                            <i class='bx bx-check-circle'></i>
+                            JPEG, PNG
+                        </div>
+                        <div class="info-badge">
+                            <i class='bx bx-crop'></i>
+                            Tỉ lệ 1:1
+                        </div>
+                    </div>
+                    <div class="file-info text-center mt-2" id="fileInfo"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải: Form thông tin -->
+        <div class="col-lg-8">
+            <div class="modern-card">
+                <div class="card-header-modern">
+                    <h5>
+                        <i class='bx bx-food-menu'></i>
+                        Thông tin món ăn
+                    </h5>
+                </div>
+                <div class="card-body" style="padding: 24px;">
+                    <div class="row g-3">
+                        <!-- Tên món -->
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label-modern">
+                                Tên món ăn<span class="required-star">*</span>
+                            </label>
+                            <input asp-for="Name" 
+                                   class="form-control form-control-modern" 
+                                   placeholder="VD: Cá hồi nướng muối ớt"
+                                   required>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Danh mục -->
+                        <div class="col-md-6">
+                            <label asp-for="Category" class="form-label-modern">
+                                Danh mục<span class="required-star">*</span>
+                            </label>
+                            <select asp-for="Category" class="form-select form-select-modern" required>
+                                <option value="">-- Chọn danh mục --</option>
+                                <option value="Khai vị">🥗 Khai vị</option>
+                                <option value="Món chính">🍖 Món chính</option>
+                                <option value="Món lẩu">🍲 Món lẩu</option>
+                                <option value="Món nướng">🔥 Món nướng</option>
+                                <option value="Món hải sản">🦐 Món hải sản</option>
+                                <option value="Món chay">🥬 Món chay</option>
+                                <option value="Tráng miệng">🍰 Tráng miệng</option>
+                                <option value="Đồ uống">🥤 Đồ uống</option>
+                            </select>
+                            <span asp-validation-for="Category" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Giá -->
+                        <div class="col-md-6">
+                            <label asp-for="Price" class="form-label-modern">
+                                Giá bán<span class="required-star">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="Price" 
+                                       type="number" 
+                                       class="form-control form-control-modern" 
+                                       placeholder="0"
+                                       min="0"
+                                       step="1000"
+                                       required>
+                                <span class="input-group-text" style="border: 2px solid #e5e7eb; border-left: none; border-radius: 0 10px 10px 0; background: #f9fafb; font-weight: 600; color: #667eea;">₫</span>
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Đơn vị -->
+                        <div class="col-md-6">
+                            <label class="form-label-modern">
+                                Đơn vị tính
+                            </label>
+                            <select class="form-select form-select-modern" name="unit">
+                                <option value="Phần" selected>Phần</option>
+                                <option value="Đĩa">Đĩa</option>
+                                <option value="Ly">Ly</option>
+                                <option value="Chai">Chai</option>
+                                <option value="Lon">Lon</option>
+                                <option value="Tô">Tô</option>
+                            </select>
+                        </div>
+
+                        <!-- Mô tả -->
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label-modern">
+                                Mô tả món ăn
+                            </label>
+                            <textarea asp-for="Description" 
+                                      class="form-control form-control-modern" 
+                                      rows="4"
+                                      placeholder="Nhập mô tả chi tiết về món ăn, nguyên liệu, hương vị..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="d-flex justify-content-end gap-3 mt-4 pt-4" style="border-top: 2px solid #f3f4f6;">
+                        <a asp-controller="AdminMenu" asp-action="Index" class="btn btn-modern-secondary">
+                            <i class='bx bx-arrow-back'></i>
+                            Hủy bỏ
+                        </a>
+                        <button type="submit" class="btn btn-modern-primary" id="submitBtn">
+                            <i class='bx bx-save'></i>
+                            Lưu món ăn
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</form>
 
 @section Scripts {
     @{
@@ -158,42 +459,114 @@
     }
 
     <script>
+        let selectedFile = null;
+
         function previewImage(input) {
+            const uploadArea = document.getElementById('uploadArea');
+            const imagePreview = document.getElementById('imagePreview');
+            const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+            const changeImageBtn = document.getElementById('changeImageBtn');
+            const fileInfo = document.getElementById('fileInfo');
+
             if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('imagePreview').src = e.target.result;
+                selectedFile = input.files[0];
+                
+                // Validate file size (1MB)
+                if (selectedFile.size > 1048576) {
+                    alert('⚠️ Kích thước file quá lớn! Vui lòng chọn file nhỏ hơn 1 MB.');
+                    input.value = '';
+                    return;
                 }
-                reader.readAsDataURL(input.files[0]);
+
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!allowedTypes.includes(selectedFile.type)) {
+                    alert('⚠️ Định dạng file không hợp lệ! Chỉ chấp nhận JPEG, PNG.');
+                    input.value = '';
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.add('show');
+                    uploadPlaceholder.classList.add('hidden');
+                    uploadArea.classList.add('has-image');
+                    changeImageBtn.classList.add('show');
+                    
+                    // Show file info
+                    const fileSizeKB = (selectedFile.size / 1024).toFixed(2);
+                    fileInfo.innerHTML = `
+                        <i class='bx bx-check-circle' style="color: #10b981;"></i>
+                        <strong>${selectedFile.name}</strong> (${fileSizeKB} KB)
+                    `;
+                    fileInfo.style.color = '#10b981';
+                }
+                reader.readAsDataURL(selectedFile);
+
+                console.log('✅ File selected:', selectedFile.name, selectedFile.size + ' bytes');
             }
         }
 
-        // Format số tiền khi nhập
-        document.addEventListener('DOMContentLoaded', function () {
-            const priceInput = document.querySelector('input[name="Price"]');
-            if (priceInput) {
-                // Xử lý khi người dùng nhập
-                priceInput.addEventListener('input', function (e) {
-                    let value = e.target.value.replace(/[^\d]/g, '');
-                    if (value) {
-                        // Lưu giá trị số để submit
-                        e.target.setAttribute('data-raw-value', value);
-                        // Hiển thị format cho người dùng
-                        e.target.value = parseInt(value).toLocaleString('vi-VN');
-                    }
-                });
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.backgroundColor = '#f0f4ff';
+        });
 
-                // Xử lý khi submit form
-                const form = document.querySelector('form');
-                if (form) {
-                    form.addEventListener('submit', function (e) {
-                        const rawValue = priceInput.getAttribute('data-raw-value');
-                        if (rawValue) {
-                            priceInput.value = rawValue;
-                        }
-                    });
-                }
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#e0e7ff';
+            uploadArea.style.backgroundColor = '';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            uploadArea.style.borderColor = '#e0e7ff';
+            uploadArea.style.backgroundColor = '';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const fileInput = document.getElementById('imageFile');
+                fileInput.files = files;
+                previewImage(fileInput);
             }
+        });
+
+        // Format price input
+        const priceInput = document.querySelector('input[name="Price"]');
+        if (priceInput) {
+            priceInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^\d]/g, '');
+                if (value) {
+                    e.target.value = parseInt(value).toLocaleString('vi-VN');
+                }
+            });
+
+            // Remove formatting before submit
+            document.getElementById('menuForm').addEventListener('submit', function(e) {
+                const rawValue = priceInput.value.replace(/[^\d]/g, '');
+                priceInput.value = rawValue;
+                
+                console.log('📤 Submitting form with file:', selectedFile ? selectedFile.name : 'No file');
+            });
+        }
+
+        // Form validation feedback
+        const form = document.getElementById('menuForm');
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+                alert('⚠️ Vui lòng điền đầy đủ thông tin bắt buộc!');
+            }
+            form.classList.add('was-validated');
         });
     </script>
 }
