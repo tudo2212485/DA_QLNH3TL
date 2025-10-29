@@ -5,6 +5,7 @@
 
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,7 +20,7 @@
             align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         .login-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -27,38 +28,38 @@
             padding: 3rem;
             backdrop-filter: blur(10px);
         }
-        
+
         .login-header {
             text-align: center;
             margin-bottom: 2rem;
         }
-        
+
         .login-header h1 {
             color: #333;
             font-weight: 700;
             margin-bottom: 0.5rem;
         }
-        
+
         .login-header p {
             color: #666;
             margin-bottom: 0;
         }
-        
+
         .form-floating {
             margin-bottom: 1.5rem;
         }
-        
+
         .form-floating .form-control {
             border-radius: 10px;
             border: 2px solid #e9ecef;
             padding: 1rem 0.75rem;
         }
-        
+
         .form-floating .form-control:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
-        
+
         .btn-login {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
@@ -69,21 +70,21 @@
             letter-spacing: 1px;
             transition: all 0.3s ease;
         }
-        
+
         .btn-login:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-        
+
         .alert {
             border-radius: 10px;
             border: none;
         }
-        
+
         .form-check {
             margin: 1rem 0;
         }
-        
+
         .demo-accounts {
             background: #f8f9fa;
             border-radius: 10px;
@@ -91,17 +92,17 @@
             margin-top: 2rem;
             font-size: 0.9rem;
         }
-        
+
         .demo-accounts h6 {
             color: #495057;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
-        
+
         .demo-accounts .account {
             margin-bottom: 0.3rem;
         }
-        
+
         .icon-container {
             width: 80px;
             height: 80px;
@@ -112,13 +113,14 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .icon-container i {
             font-size: 2rem;
             color: white;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="row justify-content-center">
@@ -152,19 +154,22 @@
 
                     <form method="post" asp-controller="Auth" asp-action="Login">
                         @Html.AntiForgeryToken()
-                        
+
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="username" name="username" placeholder="Tên đăng nhập" required>
+                            <input type="text" class="form-control" id="username" name="username"
+                                placeholder="Tên đăng nhập" required>
                             <label for="username"><i class="bi bi-person me-2"></i>Tên đăng nhập</label>
                         </div>
 
                         <div class="form-floating">
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Mật khẩu" required>
+                            <input type="password" class="form-control" id="password" name="password"
+                                placeholder="Mật khẩu" required>
                             <label for="password"><i class="bi bi-lock me-2"></i>Mật khẩu</label>
                         </div>
 
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe" value="true">
+                            <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe"
+                                value="true">
                             <label class="form-check-label" for="rememberMe">
                                 Ghi nhớ đăng nhập
                             </label>
@@ -179,9 +184,9 @@
 
                     <div class="demo-accounts">
                         <h6><i class="bi bi-info-circle me-1"></i>Tài khoản demo:</h6>
-                        <div class="account"><strong>Admin:</strong> admin / admin123</div>
-                        <div class="account"><strong>Nhân viên:</strong> waiter1 / 123456</div>
-                        <div class="account"><strong>Bếp trưởng:</strong> chef1 / 123456</div>
+                        <div class="account"><strong>👑 Admin:</strong> admin / admin123</div>
+                        <div class="account"><strong>🍽️ Nhân viên:</strong> nhanvien / 123456</div>
+                        <div class="account"><strong>👨‍🍳 Đầu bếp:</strong> daubep / 123456</div>
                     </div>
                 </div>
             </div>
@@ -190,4 +195,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

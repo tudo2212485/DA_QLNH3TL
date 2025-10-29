@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using QLNHWebApp.Models;
 
 namespace QLNHWebApp.Controllers
 {
+    [Authorize(AuthenticationSchemes = "AdminAuth", Policy = "AdminOnly")]
     [Route("Admin/[controller]")]
     [ApiExplorerSettings(IgnoreApi = true)] // Loại khỏi Swagger vì đây là MVC controller, không phải API
     public class SettingsController : Controller

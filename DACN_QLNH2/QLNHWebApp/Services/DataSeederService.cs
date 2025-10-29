@@ -32,20 +32,20 @@ namespace QLNHWebApp.Services
                     new Employee 
                     { 
                         FullName = "Nguyễn Văn A", 
-                        Username = "waiter1", 
-                        Email = "waiter1@restaurant.com",
+                        Username = "nhanvien", 
+                        Email = "nhanvien@restaurant.com",
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"), 
-                        Role = "Waiter",
+                        Role = "Nhân viên",
                         CreatedAt = DateTime.Now,
                         IsActive = true
                     },
                     new Employee 
                     { 
                         FullName = "Trần Thị B", 
-                        Username = "chef1", 
-                        Email = "chef1@restaurant.com",
+                        Username = "daubep", 
+                        Email = "daubep@restaurant.com",
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"), 
-                        Role = "Chef",
+                        Role = "Đầu bếp",
                         CreatedAt = DateTime.Now,
                         IsActive = true
                     }
@@ -183,6 +183,62 @@ namespace QLNHWebApp.Services
             }
 
             await _context.SaveChangesAsync();
+
+            // === SEED DEMO ORDERS (Đã thanh toán) cho DASHBOARD ===
+            if (!_context.Orders.Any(o => o.Status == "Đã thanh toán"))
+            {
+                var menuItemsList = await _context.MenuItems.ToListAsync();
+                var tablesList = await _context.Tables.ToListAsync();
+
+                if (menuItemsList.Any() && tablesList.Any())
+                {
+                    var random = new Random();
+                    var demoOrders = new List<Order>();
+
+                    // Tạo 15 đơn hàng trong 6 tháng gần đây
+                    for (int i = 0; i < 15; i++)
+                    {
+                        // Random ngày trong 6 tháng gần đây
+                        var orderDate = DateTime.Now.AddMonths(-random.Next(0, 6)).AddDays(-random.Next(0, 30));
+                        var table = tablesList[random.Next(tablesList.Count)];
+
+                        var order = new Order
+                        {
+                            CustomerName = $"Khách hàng Demo {i + 1}",
+                            Phone = $"090{random.Next(1000000, 9999999)}",
+                            Date = orderDate,
+                            Status = "Đã thanh toán",
+                            TableId = table.Id,
+                            TotalPrice = 0, // Sẽ tính lại sau
+                            OrderItems = new List<OrderItem>()
+                        };
+
+                        // Thêm 2-5 món ngẫu nhiên cho mỗi đơn
+                        int itemCount = random.Next(2, 6);
+                        for (int j = 0; j < itemCount; j++)
+                        {
+                            var menuItem = menuItemsList[random.Next(menuItemsList.Count)];
+                            var quantity = random.Next(1, 4);
+
+                            order.OrderItems.Add(new OrderItem
+                            {
+                                MenuItemId = menuItem.Id,
+                                Quantity = quantity,
+                                Price = menuItem.Price
+                            });
+                        }
+
+                        // Tính tổng tiền
+                        order.TotalPrice = order.OrderItems.Sum(oi => oi.Price * oi.Quantity);
+                        demoOrders.Add(order);
+                    }
+
+                    _context.Orders.AddRange(demoOrders);
+                    await _context.SaveChangesAsync();
+                    
+                    Console.WriteLine($"✅ Đã seed {demoOrders.Count} đơn hàng demo có trạng thái 'Đã thanh toán'");
+                }
+            }
         }
     }
 }

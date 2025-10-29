@@ -1,210 +1,753 @@
 @model IEnumerable<QLNHWebApp.Controllers.CustomerViewModel>
 @{
     ViewData["Title"] = "Quản lý Khách hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 text-gray-800">Quản lý Khách hàng</h1>
-    </div>
-
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <!-- Statistics Cards -->
+    <!-- Modern Page Header -->
     <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng nhân viên</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalCustomers</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-users fa-2x text-gray-300"></i>
-                        </div>
+        <div class="col-12">
+            <div class="customer-page-header">
+                <div>
+                    <h3 class="page-title-modern">
+                        <i class="bx bx-group me-2"></i>Quản lý Khách hàng
+                    </h3>
+                    <p class="page-subtitle-modern">Theo dõi và phân tích hành vi khách hàng nhà hàng</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="customer-stat-card stat-total-customers">
+                <div class="stat-icon-wrapper">
+                    <div class="stat-icon">
+                        <i class="bx bx-group"></i>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Tổng khách hàng</div>
+                    <div class="stat-value">@ViewBag.TotalCustomers</div>
+                    <div class="stat-badge-modern">
+                        <span>Tất cả</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Khách hàng</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.ActiveCustomers</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
-                        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="customer-stat-card stat-new-customers">
+                <div class="stat-icon-wrapper">
+                    <div class="stat-icon">
+                        <i class="bx bx-user-plus"></i>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Khách mới</div>
+                    <div class="stat-value">@ViewBag.NewCustomers</div>
+                    <div class="stat-badge-modern">
+                        <span>30 ngày</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Khách hàng mới</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.NewCustomers</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-user-plus fa-2x text-gray-300"></i>
-                        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="customer-stat-card stat-loyal-customers">
+                <div class="stat-icon-wrapper">
+                    <div class="stat-icon">
+                        <i class="bx bx-heart"></i>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Khách thân thiết</div>
+                    <div class="stat-value">@ViewBag.LoyalCustomers</div>
+                    <div class="stat-badge-modern">
+                        <span>≥ 5 đơn</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">VIP</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.VipCustomers</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-crown fa-2x text-gray-300"></i>
-                        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="customer-stat-card stat-vip-customers">
+                <div class="stat-icon-wrapper">
+                    <div class="stat-icon">
+                        <i class="bx bx-crown"></i>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Khách VIP</div>
+                    <div class="stat-value">@ViewBag.VipCustomers</div>
+                    <div class="stat-badge-modern">
+                        <span>≥ 1M</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Tìm kiếm và Lọc</h6>
-        </div>
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label for="search" class="form-label">Tìm kiếm</label>
-                    <input type="text" class="form-control" id="search" name="search" 
-                           value="@ViewData["SearchFilter"]" placeholder="Tên, username, email...">
-                </div>
-                <div class="col-md-4">
-                    <label for="role" class="form-label">Vai trò</label>
-                    <select class="form-select" id="role" name="role">
-                        <option value="">Tất cả vai trò</option>
-                        <option value="Active" selected="@(ViewData["RoleFilter"]?.ToString() == "Active")">Hoạt động</option>
-                        <option value="Confirmed" selected="@(ViewData["RoleFilter"]?.ToString() == "Confirmed")">Đã xác nhận</option>
-                        <option value="Cancelled" selected="@(ViewData["RoleFilter"]?.ToString() == "Cancelled")">Không hoạt động</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">&nbsp;</label>
-                    <div>
-                        <button type="submit" class="btn btn-primary me-2">
-                            <i class="fas fa-search"></i> Tìm kiếm
-                        </button>
-                        <a href="@Url.Action("Index")" class="btn btn-secondary">
-                            <i class="fas fa-undo"></i> Reset
-                        </a>
+    <!-- Search & Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="search-filter-card-modern">
+                <form method="get" class="row g-3 align-items-end">
+                    <div class="col-lg-5 col-md-6">
+                        <label class="modern-label">
+                            <i class="bx bx-search me-1"></i>Tìm kiếm khách hàng
+                        </label>
+                        <div class="modern-input-wrapper">
+                            <input type="text" class="modern-input" id="search" name="search" 
+                                   value="@ViewData["SearchFilter"]"
+                                   placeholder="Nhập tên khách hàng hoặc số điện thoại...">
+                            <i class="bx bx-search input-icon"></i>
+                        </div>
                     </div>
-                </div>
-            </form>
+                    <div class="col-lg-3 col-md-6">
+                        <label class="modern-label">
+                            <i class="bx bx-filter me-1"></i>Phân loại
+                        </label>
+                        <select class="modern-select" id="role" name="role">
+                            <option value="">Tất cả khách hàng</option>
+                            <option value="Active" selected="@(ViewData["RoleFilter"]?.ToString() == "Active")">
+                                🟢 Đang hoạt động
+                            </option>
+                            <option value="Confirmed" selected="@(ViewData["RoleFilter"]?.ToString() == "Confirmed")">
+                                ✅ Đã xác nhận
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-12">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="submit" class="btn-filter-modern">
+                                <i class="bx bx-search-alt me-1"></i>Tìm kiếm
+                            </button>
+                            <a href="@Url.Action("Index")" class="btn-reset-modern">
+                                <i class="bx bx-reset me-1"></i>Reset
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- Customers Table -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Danh sách khách hàng (@Model.Count())</h6>
-        </div>
-        <div class="card-body">
-            @if (Model.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Thông tin khách hàng</th>
-                                <th>Số đơn hàng</th>
-                                <th>Tổng chi tiêu</th>
-                                <th>Lần cuối đặt</th>
-                                <th>Trạng thái</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @{
-                                var index = 1;
-                            }
-                            @foreach (var customer in Model)
-                            {
+    <div class="row">
+        <div class="col-12">
+            <div class="customers-table-card-modern">
+                <div class="table-header-modern">
+                    <h5 class="table-title-modern">
+                        <i class="bx bx-list-ul me-2"></i>Danh sách khách hàng (@Model.Count())
+                    </h5>
+                </div>
+                
+                @if (Model.Any())
+                {
+                    <div class="table-container">
+                        <table class="modern-customers-table">
+                            <thead>
                                 <tr>
-                                    <td>@index</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-user-circle fa-2x text-gray-300 me-3"></i>
-                                            <div>
-                                                <div class="font-weight-bold">@customer.CustomerName</div>
-                                                <div class="small text-muted">@customer.Phone</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-primary">@customer.TotalOrders đơn</span>
-                                    </td>
-                                    <td>
-                                        <strong class="text-success">@customer.TotalSpent.ToString("N0") đ</strong>
-                                        @if (customer.TotalSpent >= 1000000)
-                                        {
-                                            <i class="fas fa-crown text-warning ms-1" title="Khách VIP"></i>
-                                        }
-                                    </td>
-                                    <td>@customer.LastOrderDate.ToString("dd/MM/yyyy")</td>
-                                    <td>
-                                        @switch (customer.Status)
-                                        {
-                                            case "Active":
-                                            case "Confirmed":
-                                                <span class="badge bg-success">Hoạt động</span>
-                                                break;
-                                            case "Cancelled":
-                                                <span class="badge bg-danger">Không hoạt động</span>
-                                                break;
-                                            default:
-                                                <span class="badge bg-secondary">@customer.Status</span>
-                                                break;
-                                        }
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="@Url.Action("Details", new { phone = customer.Phone })" 
-                                               class="btn btn-sm btn-info" title="Chi tiết">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        </div>
-                                    </td>
+                                    <th style="width: 60px" class="text-center">#</th>
+                                    <th style="width: 250px">THÔNG TIN KHÁCH HÀNG</th>
+                                    <th style="width: 120px" class="text-center">SỐ ĐƠN HÀNG</th>
+                                    <th style="width: 180px" class="text-end">TỔNG CHI TIÊU</th>
+                                    <th style="width: 140px" class="text-center">LẦN CUỐI ĐẶT</th>
+                                    <th style="width: 140px" class="text-center">PHÂN LOẠI</th>
+                                    <th style="width: 120px" class="text-center">THAO TÁC</th>
                                 </tr>
-                                index++;
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="text-center py-4">
-                    <i class="fas fa-users fa-3x text-gray-300 mb-3"></i>
-                    <p class="text-muted">Không có khách hàng nào.</p>
-                </div>
-            }
+                            </thead>
+                            <tbody>
+                                @{
+                                    var index = 1;
+                                }
+                                @foreach (var customer in Model)
+                                {
+                                    <tr class="customer-row">
+                                        <td class="text-center">
+                                            <span class="customer-number">@index</span>
+                                        </td>
+                                        <td>
+                                            <div class="customer-info-cell">
+                                                <div class="customer-avatar-modern">
+                                                    <i class="bx bx-user"></i>
+                                                </div>
+                                                <div class="customer-details-modern">
+                                                    <div class="customer-name-modern">@customer.CustomerName</div>
+                                                    <div class="customer-phone-modern">
+                                                        <i class="bx bx-phone"></i>
+                                                        @customer.Phone
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="orders-badge">
+                                                <i class="bx bx-receipt"></i>
+                                                @customer.TotalOrders
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="spending-amount">
+                                                @customer.TotalSpent.ToString("N0")₫
+                                                @if (customer.TotalSpent >= 1000000)
+                                                {
+                                                    <i class="bx bx-crown crown-icon" title="Khách VIP"></i>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="date-badge-modern">
+                                                @customer.LastOrderDate.ToString("dd/MM/yyyy")
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            @{
+                                                string customerType = "";
+                                                string customerTypeClass = "";
+                                                
+                                                if (customer.TotalSpent >= 1000000)
+                                                {
+                                                    customerType = "VIP";
+                                                    customerTypeClass = "type-vip";
+                                                }
+                                                else if (customer.TotalOrders >= 5)
+                                                {
+                                                    customerType = "Thân thiết";
+                                                    customerTypeClass = "type-loyal";
+                                                }
+                                                else if (customer.LastOrderDate >= DateTime.Today.AddDays(-30))
+                                                {
+                                                    customerType = "Khách mới";
+                                                    customerTypeClass = "type-new";
+                                                }
+                                                else
+                                                {
+                                                    customerType = "Thường";
+                                                    customerTypeClass = "type-regular";
+                                                }
+                                            }
+                                            <span class="customer-type-badge @customerTypeClass">
+                                                @customerType
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="action-buttons-modern">
+                                                <a href="@Url.Action("Details", new { phone = customer.Phone })" 
+                                                   class="action-btn-modern action-view-modern"
+                                                   title="Xem chi tiết">
+                                                    <i class="bx bx-show"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    index++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state-modern">
+                        <div class="empty-icon-modern">
+                            <i class="bx bx-user-x"></i>
+                        </div>
+                        <h5 class="empty-title-modern">Chưa có khách hàng nào</h5>
+                        <p class="empty-text-modern">Khách hàng sẽ tự động được tạo khi có đơn hàng mới</p>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <style>
+        /* Modern Page Header */
+        .customer-page-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .customer-page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .page-title-modern {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-subtitle-modern {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.95;
+            font-size: 0.95rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Modern Statistics Cards */
+        .customer-stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .customer-stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .stat-total-customers::before { background: linear-gradient(to bottom, #10b981, #059669); }
+        .stat-new-customers::before { background: linear-gradient(to bottom, #3b82f6, #2563eb); }
+        .stat-loyal-customers::before { background: linear-gradient(to bottom, #f59e0b, #d97706); }
+        .stat-vip-customers::before { background: linear-gradient(to bottom, #8b5cf6, #7c3aed); }
+
+        .customer-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        .customer-stat-card:hover::before {
+            width: 100%;
+            opacity: 0.05;
+        }
+
+        .stat-icon-wrapper {
+            flex-shrink: 0;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+
+        .stat-total-customers .stat-icon { background: linear-gradient(135deg, #10b98115, #05966915); color: #10b981; }
+        .stat-new-customers .stat-icon { background: linear-gradient(135deg, #3b82f615, #2563eb15); color: #3b82f6; }
+        .stat-loyal-customers .stat-icon { background: linear-gradient(135deg, #f59e0b15, #d9770615); color: #f59e0b; }
+        .stat-vip-customers .stat-icon { background: linear-gradient(135deg, #8b5cf615, #7c3aed15); color: #8b5cf6; }
+
+        .stat-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-badge-modern span {
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        /* Search & Filter */
+        .search-filter-card-modern {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .modern-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .modern-input-wrapper {
+            position: relative;
+        }
+
+        .modern-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            padding-left: 2.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            transition: all 0.2s ease;
+            background: #f8fafc;
+        }
+
+        .modern-input:focus {
+            outline: none;
+            border-color: #10b981;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.125rem;
+            pointer-events: none;
+        }
+
+        .modern-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            transition: all 0.2s ease;
+            background: #f8fafc;
+            cursor: pointer;
+        }
+
+        .modern-select:focus {
+            outline: none;
+            border-color: #10b981;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .btn-filter-modern, .btn-reset-modern {
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9375rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-filter-modern {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-filter-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+
+        .btn-reset-modern {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .btn-reset-modern:hover {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+
+        /* Table Card */
+        .customers-table-card-modern {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .table-header-modern {
+            padding: 1.5rem 2rem;
+            background: linear-gradient(to bottom, #fafafa, white);
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table-title-modern {
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* Modern Table */
+        .modern-customers-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modern-customers-table thead th {
+            background: #f8fafc;
+            padding: 1rem 0.75rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modern-customers-table tbody td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .customer-row {
+            transition: all 0.2s ease;
+        }
+
+        .customer-row:hover {
+            background: #f8fafc;
+        }
+
+        .customer-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
+            text-align: center;
+            background: #f1f5f9;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .customer-info-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .customer-avatar-modern {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #10b98115, #05966915);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #10b981;
+            flex-shrink: 0;
+        }
+
+        .customer-name-modern {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.9375rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .customer-phone-modern {
+            font-size: 0.8125rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .orders-badge {
+            background: #3b82f615;
+            color: #3b82f6;
+            padding: 0.5rem 0.875rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .spending-amount {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .crown-icon {
+            color: #f59e0b;
+            font-size: 1.25rem;
+        }
+
+        .date-badge-modern {
+            background: #f1f5f9;
+            padding: 0.5rem 0.875rem;
+            border-radius: 10px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #64748b;
+            display: inline-block;
+        }
+
+        .customer-type-badge {
+            padding: 0.5rem 0.875rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .type-vip {
+            background: linear-gradient(135deg, #8b5cf610, #7c3aed10);
+            color: #8b5cf6;
+            border: 1.5px solid #8b5cf630;
+        }
+
+        .type-loyal {
+            background: linear-gradient(135deg, #f59e0b10, #d9770610);
+            color: #f59e0b;
+            border: 1.5px solid #f59e0b30;
+        }
+
+        .type-new {
+            background: linear-gradient(135deg, #3b82f610, #2563eb10);
+            color: #3b82f6;
+            border: 1.5px solid #3b82f630;
+        }
+
+        .type-regular {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border: 1.5px solid #e2e8f0;
+        }
+
+        .action-buttons-modern {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .action-btn-modern {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1.125rem;
+            text-decoration: none;
+        }
+
+        .action-view-modern {
+            color: #10b981;
+            border-color: #10b98130;
+        }
+
+        .action-view-modern:hover {
+            background: #10b981;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Empty State */
+        .empty-state-modern {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .empty-icon-modern {
+            font-size: 4rem;
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+        }
+
+        .empty-title-modern {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-text-modern {
+            color: #94a3b8;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .page-title-modern {
+                font-size: 1.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.75rem;
+            }
+        }
+
+        /* Animation */
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .customer-stat-card, .search-filter-card-modern, .customers-table-card-modern {
+            animation: fadeInUp 0.5s ease-out;
+        }
+    </style>
+}
+

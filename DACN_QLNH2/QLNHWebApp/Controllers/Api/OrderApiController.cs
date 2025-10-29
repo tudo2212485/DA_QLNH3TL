@@ -141,6 +141,7 @@ namespace QLNHWebApp.Controllers.Api
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.MenuItem)
                 .Include(o => o.Table)
+                .OrderByDescending(o => o.Date)
                 .ToListAsync();
         }
     }

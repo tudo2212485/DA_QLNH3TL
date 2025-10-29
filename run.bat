@@ -6,11 +6,11 @@ echo.
 
 REM Dung process cu (neu co)
 echo Dang kiem tra va dung process cu...
-taskkill /F /IM dotnet.exe 2>nul
-taskkill /F /IM QLNHWebApp.exe 2>nul
-timeout /t 2 >nul
+taskkill /F /IM dotnet.exe >nul 2>&1
+taskkill /F /IM QLNHWebApp.exe >nul 2>&1
+timeout /t 2 /nobreak >nul
 
-cd D:\DACN_QLNH2\DACN_QLNH2\QLNHWebApp
+cd /d D:\DACN_QLNH2\DACN_QLNH2\QLNHWebApp
 
 echo.
 echo Dang khoi dong server...
@@ -19,4 +19,3 @@ echo.
 dotnet run
 
 pause
-

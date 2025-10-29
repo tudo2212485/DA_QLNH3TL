@@ -1,280 +1,364 @@
-# 🍽️ Hệ thống Quản lý Nhà Hàng (Restaurant Management System)
+# 🍽️ Restaurant Management System (Hệ thống Quản lý Nhà hàng)
 
-## 📋 Giới thiệu
+[![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-9.0-blue.svg)](https://dotnet.microsoft.com/)
+[![React](https://img.shields.io/badge/React-18.0-61DAFB.svg)](https://reactjs.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-3.x-003B57.svg)](https://www.sqlite.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Hệ thống quản lý nhà hàng toàn diện với giao diện admin hiện đại và trang đặt bàn trực tuyến cho khách hàng. Được xây dựng với **ASP.NET Core 9** (Backend) và **React + TypeScript** (Frontend).
+Hệ thống quản lý nhà hàng toàn diện được xây dựng bằng **ASP.NET Core 9.0**, **React**, và **Entity Framework Core**. Dự án hỗ trợ quản lý đặt bàn, thực đơn, đơn hàng, nhân viên, khách hàng và thống kê doanh thu.
 
 ---
 
-## 🏗️ Cấu trúc dự án
+## 📋 Mục lục
 
-```
-DACN_QLNH2/
-├── QLNHWebApp/                          # 🔧 Backend - ASP.NET Core MVC
-│   ├── Controllers/
-│   │   ├── Api/                         # RESTful API Controllers
-│   │   │   ├── TableApiController.cs    # API bàn ăn & đặt bàn
-│   │   │   ├── MenuApiController.cs     # API thực đơn
-│   │   │   ├── OrderApiController.cs    # API đơn hàng
-│   │   │   └── ContactApiController.cs  # API liên hệ
-│   │   ├── Admin*.cs                    # Controllers cho Admin
-│   │   ├── Auth*.cs                     # Xác thực & phân quyền
-│   │   └── *.cs                         # Controllers MVC khác
-│   ├── Models/
-│   │   ├── DTOs/                        # 🆕 Data Transfer Objects
-│   │   │   ├── BookingDTOs.cs           # Request/Response đặt bàn
-│   │   │   ├── OrderDTOs.cs             # Request/Response đơn hàng
-│   │   │   └── PaymentDTOs.cs           # Request/Response thanh toán
-│   │   ├── RestaurantModels.cs          # Entity Models
-│   │   └── RestaurantDbContext.cs       # EF Core DbContext
-│   ├── Views/                           # Razor Views (Server-side rendering)
-│   ├── Services/                        # Business Logic Layer
-│   │   └── DataSeederService.cs         # Seed dữ liệu mẫu
-│   ├── Migrations/                      # EF Core Migrations
-│   ├── wwwroot/                         # Static files
-│   │   ├── assets/                      # React build output
-│   │   ├── images/                      # Hình ảnh món ăn
-│   │   └── css/                         # Custom CSS
-│   ├── Program.cs                       # Entry point
-│   ├── appsettings.json                 # Configuration
-│   └── QLNHDB.db                        # SQLite Database
-│
-├── Restaurant Management Web App/       # ⚛️ Frontend - React + TypeScript
-│   ├── src/
-│   │   ├── components/                  # React Components
-│   │   │   ├── BookingPage.tsx          # Trang đặt bàn
-│   │   │   ├── MenuPage.tsx             # Trang thực đơn
-│   │   │   └── ...
-│   │   ├── services/                    # API Services
-│   │   │   └── api.ts                   # Axios configuration
-│   │   ├── types/                       # TypeScript types
-│   │   └── App.tsx                      # Main App component
-│   ├── build/                           # Production build (sau khi npm run build)
-│   ├── package.json
-│   └── vite.config.ts                   # Vite configuration
-│
-├── data/                                # 💾 Database files
-│   └── QLNHDB.db                        # SQLite database (shared)
-│
-├── IMPROVEMENT_GUIDE.md                 # 📖 Hướng dẫn cải tiến
-└── README.md                            # 📄 File này
-```
+- [✨ Tính năng chính](#-tính-năng-chính)
+- [🛠️ Công nghệ sử dụng](#️-công-nghệ-sử-dụng)
+- [📦 Cài đặt](#-cài-đặt)
+- [🚀 Chạy ứng dụng](#-chạy-ứng-dụng)
+- [👥 Tài khoản mặc định](#-tài-khoản-mặc-định)
+- [📊 Cấu trúc dự án](#-cấu-trúc-dự-án)
+- [🔐 Phân quyền](#-phân-quyền)
+- [📖 API Documentation](#-api-documentation)
+- [🧪 Testing](#-testing)
+- [📝 License](#-license)
 
 ---
 
 ## ✨ Tính năng chính
 
-### 🎯 **Cho Khách hàng:**
-- ✅ Xem thực đơn trực tuyến với hình ảnh
-- ✅ Đặt bàn trực tuyến (chọn tầng, bàn, giờ)
-- ✅ Chọn món ăn trước khi đến nhà hàng
-- ✅ Thanh toán trực tuyến qua VNPAY (tùy chọn)
+### 🔐 Xác thực & Phân quyền
+- ✅ Đăng nhập/Đăng xuất với BCrypt password hashing
+- ✅ 3 phân quyền: **Admin**, **Nhân viên**, **Đầu bếp**
+- ✅ Session-based authentication (Cookie)
+- ✅ Policy-based authorization
 
-### 👨‍💼 **Cho Admin:**
-- ✅ Quản lý đặt bàn (xác nhận/từ chối)
-- ✅ Quản lý thực đơn (CRUD món ăn)
-- ✅ Quản lý bàn ăn (thêm/sửa/xóa)
-- ✅ Đặt bàn trực tiếp (walk-in booking)
-- ✅ Quản lý đơn hiện thời
-- ✅ Xem lịch sử hóa đơn & thống kê doanh thu
-- ✅ Quản lý nhân viên
-- ✅ Cài đặt hệ thống
+### 📊 Dashboard & Thống kê
+- ✅ Biểu đồ doanh thu theo tháng (Line Chart)
+- ✅ Thống kê đơn hàng theo trạng thái (Pie Chart)
+- ✅ Top 5 món ăn bán chạy (Bar Chart)
+- ✅ Tổng hợp: Tổng đơn, Doanh thu, Khách hàng
+
+### 🍽️ Quản lý Thực đơn
+- ✅ CRUD món ăn đầy đủ
+- ✅ Upload ảnh món ăn (JPG, PNG, max 1MB)
+- ✅ Phân loại theo danh mục
+- ✅ Tìm kiếm, lọc, sắp xếp
+
+### 📋 Quản lý Đơn hàng
+- ✅ Xem đơn hiện thời & lịch sử
+- ✅ Thêm/Sửa/Xóa món trong đơn
+- ✅ Chuyển bàn
+- ✅ Thanh toán & In hóa đơn
+- ✅ 2 chế độ xem: Card View & Table View
+
+### 🪑 Quản lý Đặt bàn
+- ✅ Đặt bàn theo tầng (Tầng 1, Tầng 2, Sân thượng)
+- ✅ Chọn số khách, ngày giờ
+- ✅ Quản lý trạng thái bàn (Available, Reserved, Occupied)
+
+### 👥 Quản lý Nhân viên
+- ✅ CRUD nhân viên
+- ✅ Phân quyền theo vai trò
+- ✅ Thống kê: Tổng NV, Mới, Thân thiết, VIP
+- ✅ Tìm kiếm, lọc theo vai trò
+
+### 👤 Quản lý Khách hàng
+- ✅ Tự động tạo từ đơn hàng
+- ✅ Thống kê: Tổng khách, Mới (30 ngày), Thân thiết (≥5 đơn), VIP (≥1M)
+- ✅ Xem lịch sử đơn hàng của khách
+
+### ⚙️ Thiết lập Hệ thống
+- ✅ Cấu hình thông tin nhà hàng
+- ✅ Giờ hoạt động, Thuế VAT
+- ✅ Khôi phục cài đặt mặc định
+
+### 🔌 RESTful API
+- ✅ **Server-side Pagination** (page, pageSize, search, status, sort)
+- ✅ Swagger UI Documentation (`/swagger`)
+- ✅ JSON response format
+- ✅ Error handling & validation
 
 ---
 
-## 🚀 Hướng dẫn cài đặt & chạy
+## 🛠️ Công nghệ sử dụng
 
-### **Yêu cầu:**
-- **.NET 9 SDK**: [Download tại đây](https://dotnet.microsoft.com/download/dotnet/9.0)
-- **Node.js 18+**: [Download tại đây](https://nodejs.org/)
-- **Git** (tùy chọn)
+### Backend
+- **ASP.NET Core 9.0** - Web API & MVC Framework
+- **Entity Framework Core** - ORM
+- **SQLite** - Database
+- **BCrypt.Net** - Password Hashing
+- **Swashbuckle (Swagger)** - API Documentation
+
+### Frontend
+- **React 18** - SPA Framework
+- **Vite** - Build Tool
+- **Chart.js** - Data Visualization
+- **Boxicons** - Icon Library
+- **Bootstrap 5** - CSS Framework
+
+### Development Tools
+- **.NET 9 SDK**
+- **Node.js & npm**
+- **Git**
 
 ---
 
-### **Bước 1: Clone/Download dự án**
+## 📦 Cài đặt
+
+### Yêu cầu hệ thống
+- **.NET 9 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/9.0)
+- **Node.js 18+** - [Download](https://nodejs.org/)
+- **Git** - [Download](https://git-scm.com/)
+
+### Bước 1: Clone repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/DACN_QLNH2.git
 cd DACN_QLNH2
 ```
 
----
-
-### **Bước 2: Chạy Backend (ASP.NET Core)**
+### Bước 2: Restore packages
 
 ```bash
-# Di chuyển vào thư mục backend
-cd QLNHWebApp
-
-# Restore dependencies
+cd DACN_QLNH2/QLNHWebApp
 dotnet restore
+```
 
-# Chạy migration (tạo database)
+### Bước 3: Tạo database
+
+```bash
+# Áp dụng migrations
 dotnet ef database update
 
-# Chạy ứng dụng
+# Database sẽ được tạo tại: ../data/QLNHDB.db
+```
+
+### Bước 4: Seed dữ liệu mẫu
+
+Dữ liệu mẫu sẽ tự động được seed khi chạy ứng dụng lần đầu, bao gồm:
+- 4 tài khoản nhân viên (1 Admin, 2 Nhân viên, 1 Đầu bếp)
+- 20+ món ăn
+- 19 bàn (3 tầng)
+- 15 đơn hàng mẫu (dữ liệu 6 tháng)
+
+---
+
+## 🚀 Chạy ứng dụng
+
+### Cách 1: Sử dụng .NET CLI (Khuyến nghị)
+
+```bash
+cd DACN_QLNH2/QLNHWebApp
 dotnet run
 ```
 
-**Backend sẽ chạy tại**: `http://localhost:5000`
+### Cách 2: Sử dụng Visual Studio
 
-**Tài khoản mặc định:**
-- Username: `admin`
-- Password: `admin123`
+1. Mở file `DACN_QLNH1.sln`
+2. Chọn project `QLNHWebApp`
+3. Nhấn `F5` hoặc click **Run**
 
----
-
-### **Bước 3: Build Frontend (React) - Nếu có thay đổi**
+### Cách 3: Sử dụng script (Windows)
 
 ```bash
-# Di chuyển vào thư mục frontend
-cd "Restaurant Management Web App"
-
-# Cài đặt dependencies
-npm install
-
-# Build cho production
-npm run build
+cd DACN_QLNH2
+.\run.bat
 ```
 
-File build sẽ được copy tự động vào `QLNHWebApp/wwwroot/`
+### Truy cập ứng dụng
 
-**Lưu ý:** Nếu không có thay đổi frontend, bỏ qua bước này vì file build đã có sẵn.
-
----
-
-### **Bước 4: Truy cập ứng dụng**
-
-- **🏠 Trang chủ (Client)**: http://localhost:5000
-- **🔐 Admin Dashboard**: http://localhost:5000/Admin/Dashboard
-- **📚 Swagger API Docs**: http://localhost:5000/swagger
+- **Trang chủ khách hàng**: http://localhost:5000
+- **Trang Admin**: http://localhost:5000/Auth/Login
+- **Swagger API Docs**: http://localhost:5000/swagger
 
 ---
 
-## 🗄️ Cơ sở dữ liệu
+## 👥 Tài khoản mặc định
 
-### **SQLite Database:**
-- File: `QLNHDB.db`
-- ORM: Entity Framework Core
-- Migrations: `Migrations/`
-
-### **Các bảng chính:**
-- `Employees` - Nhân viên
-- `Tables` - Bàn ăn
-- `MenuItems` - Thực đơn
-- `TableBookings` - Đặt bàn
-- `Orders` - Đơn hàng (sau khi xác nhận booking)
-- `OrderItems` - Chi tiết món ăn trong đơn
-- `RestaurantSettings` - Cài đặt hệ thống
+| Username | Password | Vai trò | Quyền |
+|----------|----------|---------|-------|
+| `admin` | `admin123` | Admin | Toàn quyền |
+| `nhanvien` | `nv123` | Nhân viên | Quản lý đơn, đặt bàn, thực đơn |
+| `daubep` | `db123` | Đầu bếp | Chỉ xem thực đơn |
+| `dotrungb` | `dotrungb123` | Nhân viên | Quản lý đơn, đặt bàn, thực đơn |
 
 ---
 
-## 🔧 Technologies Stack
+## 📊 Cấu trúc dự án
 
-### **Backend:**
-- ASP.NET Core 9 MVC
-- Entity Framework Core (SQLite)
-- BCrypt.Net (Password hashing)
-- Swashbuckle (Swagger/OpenAPI)
+```
+DACN_QLNH2/
+├── QLNHWebApp/                      # Main ASP.NET Core project
+│   ├── Controllers/                 # MVC & API Controllers
+│   │   ├── AdminController.cs       # Admin dashboard
+│   │   ├── AuthController.cs        # Login/Logout
+│   │   ├── OrderManagementController.cs
+│   │   ├── AdminMenuController.cs
+│   │   ├── AdminCustomerController.cs
+│   │   ├── SettingsController.cs
+│   │   └── Api/                     # RESTful API Controllers
+│   │       ├── OrdersApiController.cs   # Pagination API
+│   │       ├── MenuApiController.cs
+│   │       ├── TableApiController.cs
+│   │       └── ContactApiController.cs
+│   ├── Models/                      # Data Models
+│   │   ├── RestaurantModels.cs      # All entity models
+│   │   └── RestaurantDbContext.cs   # EF Core DbContext
+│   ├── Views/                       # Razor Views
+│   │   ├── Admin/                   # Admin panel views
+│   │   ├── Auth/                    # Login views
+│   │   ├── OrderManagement/         # Order management
+│   │   ├── AdminMenu/               # Menu management
+│   │   ├── AdminCustomer/           # Customer management
+│   │   └── Settings/                # System settings
+│   ├── Services/                    # Business logic
+│   │   └── DataSeederService.cs     # Seed initial data
+│   ├── Migrations/                  # EF Core migrations
+│   ├── wwwroot/                     # Static files
+│   │   ├── images/                  # Uploaded images
+│   │   └── css/                     # Stylesheets
+│   ├── Program.cs                   # App configuration
+│   └── appsettings.json             # App settings
+├── data/                            # Database folder
+│   └── QLNHDB.db                    # SQLite database
+├── README.md                        # This file
+└── run.bat                          # Windows run script
+```
 
-### **Frontend:**
-- React 18
-- TypeScript
-- Vite (Build tool)
-- Axios (HTTP client)
-- TailwindCSS (Styling)
+---
+
+## 🔐 Phân quyền
+
+### Admin (Toàn quyền)
+- ✅ Dashboard với biểu đồ
+- ✅ Quản lý đơn hàng
+- ✅ Quản lý đặt bàn
+- ✅ Quản lý thực đơn (CRUD)
+- ✅ Quản lý nhân viên (CRUD)
+- ✅ Quản lý khách hàng
+- ✅ Thiết lập hệ thống
+
+### Nhân viên (Quản lý vận hành)
+- ✅ Quản lý đơn hàng
+- ✅ Quản lý đặt bàn
+- ✅ Quản lý thực đơn (CRUD)
+- ❌ Không thể quản lý nhân viên
+- ❌ Không thể thiết lập hệ thống
+
+### Đầu bếp (Chỉ xem)
+- ✅ Xem thực đơn
+- ❌ Không có quyền khác
 
 ---
 
 ## 📖 API Documentation
 
-Sau khi chạy backend, truy cập **Swagger UI** để xem tài liệu API đầy đủ:
+### Swagger UI
+Truy cập: http://localhost:5000/swagger
 
-```
-http://localhost:5000/swagger
+### Các endpoint chính
+
+#### Orders API (Có Pagination)
+```http
+GET /api/Orders?page=1&pageSize=10&search=&status=&sortBy=date&sortOrder=desc
 ```
 
-**Một số endpoint chính:**
-- `POST /api/tableapi/BookTable` - Đặt bàn
-- `GET /api/menuapi/GetMenuItems` - Lấy danh sách thực đơn
-- `POST /OrderManagement/AddItem` - Thêm món vào đơn
-- `GET /api/tableapi/GetAvailableTables` - Lấy bàn trống
+**Response:**
+```json
+{
+  "items": [...],
+  "page": 1,
+  "pageSize": 10,
+  "totalCount": 50,
+  "totalPages": 5,
+  "hasPrevious": false,
+  "hasNext": true
+}
+```
+
+#### Statistics API
+```http
+GET /api/Orders/statistics
+```
+
+**Response:**
+```json
+{
+  "totalOrders": 50,
+  "totalRevenue": 15000000,
+  "pendingOrders": 5,
+  "completedOrders": 45,
+  "averageOrderValue": 333333
+}
+```
 
 ---
 
 ## 🧪 Testing
 
-### **Test Backend:**
+### Test Pagination API
+
 ```bash
-cd QLNHWebApp
-dotnet test
+# Test với curl
+curl "http://localhost:5000/api/Orders?page=1&pageSize=5"
+
+# Test với browser
+http://localhost:5000/swagger
+→ GET /api/Orders → Try it out → Execute
 ```
 
-### **Test Frontend:**
-```bash
-cd "Restaurant Management Web App"
-npm test
-```
+### Test Upload ảnh
+
+1. Login: http://localhost:5000/Auth/Login
+2. Username: `admin`, Password: `admin123`
+3. Vào "Thực đơn" → "Thêm món mới"
+4. Chọn ảnh (JPG/PNG, <1MB)
+5. Điền thông tin → Save
 
 ---
 
-## 📝 Changelog & Improvements
+## 🤝 Contributing
 
-Xem file [`IMPROVEMENT_GUIDE.md`](./IMPROVEMENT_GUIDE.md) để biết:
-- ✅ Các cải tiến đã thực hiện
-- 🔄 Kế hoạch nâng cấp trong tương lai
-- 🐛 Bug fixes
+Contributions, issues và feature requests đều được chào đón!
 
----
-
-## 🤝 Đóng góp
-
-Mọi đóng góp đều được hoan nghênh! Vui lòng:
-1. Fork repository
-2. Tạo branch mới (`git checkout -b feature/AmazingFeature`)
+1. Fork dự án
+2. Tạo branch (`git checkout -b feature/AmazingFeature`)
 3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Tạo Pull Request
+5. Mở Pull Request
 
 ---
 
-## 📄 License
+## 📝 License
 
-Dự án này được phát triển cho mục đích học tập.
-
----
-
-## 👥 Tác giả
-
-- **Nhóm phát triển**: [Tên nhóm/SV]
-- **Liên hệ**: [Email]
+Dự án này được phát hành dưới giấy phép **MIT License**.
 
 ---
 
-## 🎓 Hướng dẫn cho Giảng viên
+## 👨‍💻 Tác giả
 
-### **Cách chạy nhanh nhất:**
-1. Mở terminal tại `DACN_QLNH2/QLNHWebApp/`
-2. Chạy `dotnet run`
-3. Truy cập `http://localhost:5000`
-4. Login admin với `admin / admin123`
-
-### **Kiểm tra code quality:**
-- ✅ 0 Warnings, 0 Errors
-- ✅ Password hashing với BCrypt
-- ✅ Global Exception Handler
-- ✅ Swagger API Documentation
-- ✅ Clean Architecture với DTOs
+- **Tên nhóm**: [Nhóm 3TL]
+- **Email**: [your-email@example.com]
+- **GitHub**: [@yourusername](https://github.com/yourusername)
 
 ---
 
-**🎉 Chúc bạn sử dụng hệ thống vui vẻ!**
+## 📞 Liên hệ & Hỗ trợ
 
+Nếu bạn có bất kỳ câu hỏi nào, vui lòng:
+- Mở issue trên GitHub
+- Gửi email: [your-email@example.com]
 
+---
 
+## 🙏 Lời cảm ơn
 
+- ASP.NET Core Team
+- React Community
+- Chart.js Team
+- Boxicons
+- Tất cả contributors
 
+---
 
-
-
-
+**⭐ Nếu dự án này hữu ích, đừng quên cho một ngôi sao! ⭐**

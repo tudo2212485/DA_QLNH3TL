@@ -3,269 +3,225 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="container-fluid">
-    <!-- Welcome Section -->
+<div class="container-fluid px-4">
+    <!-- Welcome Section với hiệu ứng gradient hiện đại -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="welcome-card p-4 rounded-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                <div class="d-flex align-items-center justify-content-between">
+            <div class="welcome-card-modern">
+                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <div class="welcome-content">
+                        <h2 class="welcome-title mb-2">
+                            <span class="wave">👋</span> Chào mừng, <strong>@ViewBag.FullName!</strong>
+                        </h2>
+                        <p class="welcome-subtitle mb-0">
+                            <i class="bx bx-calendar me-2"></i>@DateTime.Now.ToString("dddd, dd MMMM yyyy", new
+                                                        System.Globalization.CultureInfo("vi-VN"))
+                        </p>
+                    </div>
+                    <div class="welcome-time">
+                        <div class="time-display">@DateTime.Now.ToString("HH:mm")</div>
+                        <div class="time-label">Giờ hiện tại</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards - Thiết kế mới hiện đại -->
+    <div class="row g-4 mb-4">
+        <!-- Card 1: Tổng đơn hàng -->
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card stat-card-primary">
+                <div class="stat-icon">
+                    <i class="bx bx-receipt"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Tổng đơn hàng</div>
+                    <div class="stat-value counter-value" data-target="@ViewBag.TotalOrders">0</div>
+                    <div class="stat-trend trend-up">
+                        <i class="bx bx-trending-up"></i> <span>+12%</span> so với tháng trước
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Doanh thu -->
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card stat-card-success">
+                <div class="stat-icon">
+                    <i class="bx bx-dollar-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Tổng doanh thu</div>
+                    <div class="stat-value">@ViewBag.TotalRevenue?.ToString("C0", new
+                                                System.Globalization.CultureInfo("vi-VN"))</div>
+                    <div class="stat-trend trend-up">
+                        <i class="bx bx-trending-up"></i> <span>+8%</span> so với tháng trước
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Khách hàng -->
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card stat-card-info">
+                <div class="stat-icon">
+                    <i class="bx bx-group"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Tổng khách hàng</div>
+                    <div class="stat-value counter-value" data-target="@ViewBag.TotalCustomers">0</div>
+                    <div class="stat-trend trend-up">
+                        <i class="bx bx-trending-up"></i> <span>+15%</span> so với tháng trước
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Doanh thu hôm nay -->
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card stat-card-warning">
+                <div class="stat-icon">
+                    <i class="bx bx-trending-up"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Doanh thu hôm nay</div>
+                    <div class="stat-value">@ViewBag.TodayRevenue?.ToString("C0", new
+                                                System.Globalization.CultureInfo("vi-VN"))</div>
+                    <div class="stat-trend">
+                        <i class="bx bx-receipt"></i> <span class="counter-value"
+                            data-target="@ViewBag.TodayOrders">0</span> đơn hôm nay
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section - Layout mới logic hơn -->
+    <div class="row g-4 mb-4">
+        <!-- Revenue Chart - Main highlight -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="chart-card">
+                <div class="chart-header">
                     <div>
-                        <h2 class="mb-2">Chào mừng, @ViewBag.FullName! 👋</h2>
-                        <p class="mb-0" style="color: #f8f9fa; font-weight: 500;">Xin chào và chúc bạn một ngày làm việc hiệu quả!</p>
-                    </div>
-                    <div class="text-end">
-                        <div class="fs-6" style="color: #f8f9fa;">@DateTime.Now.ToString("dd/MM/yyyy")</div>
-                        <div class="fs-5">@DateTime.Now.ToString("HH:mm")</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Page Title -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0"><i class="bx bx-tachometer me-2"></i>Dashboard</h4>
-                <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item active">Dashboard</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <span class="text-muted mb-2 d-block">Tổng đơn hàng</span>
-                            <h3 class="mb-0 text-primary fw-bold">
-                                <span class="counter-value" data-target="@ViewBag.TotalOrders">@ViewBag.TotalOrders</span>
-                            </h3>
-                            <small class="text-success">
-                                <i class="bx bx-trending-up"></i> +12% từ tháng trước
-                            </small>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <div class="avatar-lg rounded-3 bg-primary bg-gradient d-flex align-items-center justify-content-center">
-                                <i class="bx bx-receipt text-white fs-2"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <span class="text-muted mb-2 d-block">Tổng doanh thu</span>
-                            <h3 class="mb-0 text-success fw-bold">
-                                <span class="counter-value">@ViewBag.TotalRevenue?.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</span>
-                            </h3>
-                            <small class="text-success">
-                                <i class="bx bx-trending-up"></i> +8% từ tháng trước
-                            </small>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <div class="avatar-lg rounded-3 bg-success bg-gradient d-flex align-items-center justify-content-center">
-                                <i class="bx bx-dollar-circle text-white fs-2"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <span class="text-muted mb-2 d-block">Tổng khách hàng</span>
-                            <h3 class="mb-0 text-info fw-bold">
-                                <span class="counter-value" data-target="@ViewBag.TotalCustomers">@ViewBag.TotalCustomers</span>
-                            </h3>
-                            <small class="text-success">
-                                <i class="bx bx-trending-up"></i> +15% từ tháng trước
-                            </small>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <div class="avatar-lg rounded-3 bg-info bg-gradient d-flex align-items-center justify-content-center">
-                                <i class="bx bx-user-circle text-white fs-2"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <span class="text-muted mb-2 d-block">Món ăn phổ biến</span>
-                            <h3 class="mb-0 text-warning fw-bold">
-                                <span class="counter-value">42</span>
-                            </h3>
-                            <small class="text-success">
-                                <i class="bx bx-trending-up"></i> +5% từ tuần trước
-                            </small>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <div class="avatar-lg rounded-3 bg-warning bg-gradient d-flex align-items-center justify-content-center">
-                                <i class="bx bx-food-menu text-white fs-2"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts and Analytics -->
-    <div class="row mb-4">
-        <div class="col-xl-8 mb-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-transparent border-bottom-0 pb-0">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <h5 class="card-title mb-0">
-                            <i class="bx bx-line-chart text-primary me-2"></i>Biểu đồ doanh thu 7 ngày
+                        <h5 class="chart-title">
+                            <i class="bx bx-line-chart"></i> Doanh thu theo tháng
                         </h5>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                Tuần này
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Hôm nay</a></li>
-                                <li><a class="dropdown-item" href="#">Tuần này</a></li>
-                                <li><a class="dropdown-item" href="#">Tháng này</a></li>
-                            </ul>
-                        </div>
+                        <p class="chart-subtitle">6 tháng gần nhất</p>
+                    </div>
+                    <div class="chart-actions">
+                        <button class="btn btn-sm btn-light"><i class="bx bx-download"></i></button>
                     </div>
                 </div>
-                <div class="card-body pt-2">
-                    <canvas id="revenueChart" height="300"></canvas>
+                <div class="chart-body">
+                    <canvas id="revenueChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-4 mb-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-transparent border-bottom-0">
-                    <h5 class="card-title mb-0">
-                        <i class="bx bx-bell text-warning me-2"></i>Hoạt động gần đây
-                    </h5>
+        <!-- Order Status Pie -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div>
+                        <h5 class="chart-title">
+                            <i class="bx bx-pie-chart-alt-2"></i> Trạng thái đơn hàng
+                        </h5>
+                        <p class="chart-subtitle">Tổng quan hiện tại</p>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="activity-timeline">
-                        <div class="activity-item d-flex align-items-start mb-3">
-                            <div class="flex-shrink-0">
-                                <div class="activity-icon bg-success-subtle rounded-circle p-2">
-                                    <i class="bx bx-check-circle text-success"></i>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1 fs-14">Đơn hàng mới #ORD001</h6>
-                                <p class="text-muted mb-1 fs-12">Nguyễn Văn A vừa đặt bàn cho 4 người</p>
-                                <small class="text-muted">2 phút trước</small>
-                            </div>
-                        </div>
-
-                        <div class="activity-item d-flex align-items-start mb-3">
-                            <div class="flex-shrink-0">
-                                <div class="activity-icon bg-primary-subtle rounded-circle p-2">
-                                    <i class="bx bx-user text-primary"></i>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1 fs-14">Nhân viên đăng nhập</h6>
-                                <p class="text-muted mb-1 fs-12">@ViewBag.FullName đã đăng nhập hệ thống</p>
-                                <small class="text-muted">Vừa xong</small>
-                            </div>
-                        </div>
-
-                        <div class="activity-item d-flex align-items-start mb-3">
-                            <div class="flex-shrink-0">
-                                <div class="activity-icon bg-info-subtle rounded-circle p-2">
-                                    <i class="bx bx-food-menu text-info"></i>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1 fs-14">Menu được cập nhật</h6>
-                                <p class="text-muted mb-1 fs-12">Món "Phở Bò Đặc Biệt" đã được thêm vào thực đơn</p>
-                                <small class="text-muted">15 phút trước</small>
-                            </div>
-                        </div>
-
-                        <div class="activity-item d-flex align-items-start">
-                            <div class="flex-shrink-0">
-                                <div class="activity-icon bg-warning-subtle rounded-circle p-2">
-                                    <i class="bx bx-dollar text-warning"></i>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1 fs-14">Thanh toán hoàn tất</h6>
-                                <p class="text-muted mb-1 fs-12">Đơn hàng #ORD095 đã thanh toán thành công</p>
-                                <small class="text-muted">30 phút trước</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <a href="@Url.Action("Orders", "Admin")" class="btn btn-outline-primary btn-sm">
-                            <i class="bx bx-list-ul me-1"></i>Xem tất cả
-                        </a>
-                    </div>
+                <div class="chart-body">
+                    <canvas id="statusChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="row">
+    <!-- Top Menu Items -->
+    <div class="row g-4 mb-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent">
-                    <h5 class="card-title mb-0">
-                        <i class="bx bx-flash text-warning me-2"></i>Thao tác nhanh
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-lg-3 col-md-6">
-                            <a href="@Url.Action("Orders", "Admin")" class="btn btn-outline-primary w-100 p-3 d-flex flex-column align-items-center text-decoration-none">
-                                <i class="bx bx-receipt fs-1 mb-2"></i>
-                                <span>Quản lý đơn hàng</span>
-                            </a>
-                        </div>
-                        <div class="col-lg-3 col-md-6">
-                            <a href="#" class="btn btn-outline-success w-100 p-3 d-flex flex-column align-items-center text-decoration-none">
-                                <i class="bx bx-food-menu fs-1 mb-2"></i>
-                                <span>Thêm món mới</span>
-                            </a>
-                        </div>
-                        <div class="col-lg-3 col-md-6">
-                            <a href="#" class="btn btn-outline-info w-100 p-3 d-flex flex-column align-items-center text-decoration-none">
-                                <i class="bx bx-group fs-1 mb-2"></i>
-                                <span>Quản lý nhân viên</span>
-                            </a>
-                        </div>
-                        <div class="col-lg-3 col-md-6">
-                            <a href="#" class="btn btn-outline-warning w-100 p-3 d-flex flex-column align-items-center text-decoration-none">
-                                <i class="bx bx-cog fs-1 mb-2"></i>
-                                <span>Cài đặt hệ thống</span>
-                            </a>
-                        </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div>
+                        <h5 class="chart-title">
+                            <i class="bx bx-bar-chart"></i> Top 5 món ăn bán chạy nhất
+                        </h5>
+                        <p class="chart-subtitle">Theo số lượng đã bán</p>
                     </div>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-color" style="background: #10b981;"></span> Số
+                            lượng bán</span>
+                    </div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="topMenuChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions - Thiết kế mới -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="quick-actions-header mb-3">
+                <h5 class="section-title"><i class="bx bx-bolt-circle"></i> Thao tác nhanh</h5>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-6">
+                    <a href="@Url.Action("Index", "OrderManagement")" class="quick-action-card quick-action-primary">
+                        <div class="qa-icon">
+                            <i class="bx bx-receipt"></i>
+                        </div>
+                        <div class="qa-content">
+                            <h6>Quản lý đơn hàng</h6>
+                            <p>Xem và xử lý đơn</p>
+                        </div>
+                        <div class="qa-arrow">
+                            <i class="bx bx-right-arrow-alt"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <a href="@Url.Action("Create", "AdminMenu")" class="quick-action-card quick-action-success">
+                        <div class="qa-icon">
+                            <i class="bx bx-food-menu"></i>
+                        </div>
+                        <div class="qa-content">
+                            <h6>Thêm món mới</h6>
+                            <p>Thêm món vào menu</p>
+                        </div>
+                        <div class="qa-arrow">
+                            <i class="bx bx-right-arrow-alt"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <a href="@Url.Action("Employees", "Admin")" class="quick-action-card quick-action-info">
+                        <div class="qa-icon">
+                            <i class="bx bx-group"></i>
+                        </div>
+                        <div class="qa-content">
+                            <h6>Quản lý nhân viên</h6>
+                            <p>Xem danh sách NV</p>
+                        </div>
+                        <div class="qa-arrow">
+                            <i class="bx bx-right-arrow-alt"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <a href="@Url.Action("Index", "Settings")" class="quick-action-card quick-action-warning">
+                        <div class="qa-icon">
+                            <i class="bx bx-cog"></i>
+                        </div>
+                        <div class="qa-content">
+                            <h6>Cài đặt hệ thống</h6>
+                            <p>Thiết lập nhà hàng</p>
+                        </div>
+                        <div class="qa-arrow">
+                            <i class="bx bx-right-arrow-alt"></i>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -281,7 +237,7 @@
             const duration = 2000; // 2 seconds
             const step = target / (duration / 16); // 60fps
             let current = 0;
-            
+
             const updateCounter = () => {
                 current += step;
                 if (current < target) {
@@ -291,36 +247,42 @@
                     counter.textContent = target;
                 }
             };
-            
+
             updateCounter();
         });
 
-        // Revenue Chart with improved styling
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        
-        // Create gradient
-        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
-        gradient.addColorStop(0.5, 'rgba(102, 126, 234, 0.4)');
-        gradient.addColorStop(1, 'rgba(102, 126, 234, 0.1)');
-        
-        const revenueChart = new Chart(ctx, {
+        // === 1. REVENUE CHART (Line) - IMPROVED VERSION ===
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+
+        // Gradient đẹp hơn
+        const revenueGradient = revenueCtx.createLinearGradient(0, 0, 0, 350);
+        revenueGradient.addColorStop(0, 'rgba(102, 126, 234, 0.25)');
+        revenueGradient.addColorStop(0.5, 'rgba(118, 75, 162, 0.15)');
+        revenueGradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
+
+        const revenueLabels = [@Html.Raw(ViewBag.RevenueLabels ?? "\"Chưa có dữ liệu\"")];
+        const revenueData = [@Html.Raw(ViewBag.RevenueData ?? "0")];
+
+        new Chart(revenueCtx, {
             type: 'line',
             data: {
-                labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'],
+                labels: revenueLabels,
                 datasets: [{
-                    label: 'Doanh thu (VND)',
-                    data: [1200000, 1900000, 800000, 1500000, 2000000, 3000000, 2500000],
+                    label: 'Doanh thu',
+                    data: revenueData,
                     borderColor: '#667eea',
-                    backgroundColor: gradient,
+                    backgroundColor: revenueGradient,
                     borderWidth: 3,
                     fill: true,
                     tension: 0.4,
-                    pointBackgroundColor: '#667eea',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#667eea',
+                    pointBorderWidth: 3,
                     pointRadius: 6,
-                    pointHoverRadius: 8
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#667eea',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 3
                 }]
             },
             options: {
@@ -332,56 +294,130 @@
                 },
                 plugins: {
                     legend: {
-                        display: false
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 13, weight: '600' },
+                            color: '#64748b'
+                        }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
                         titleColor: '#fff',
+                        titleFont: { size: 14, weight: 'bold' },
                         bodyColor: '#fff',
+                        bodyFont: { size: 13 },
+                        padding: 12,
                         borderColor: '#667eea',
                         borderWidth: 1,
-                        cornerRadius: 10,
+                        cornerRadius: 8,
                         displayColors: false,
                         callbacks: {
-                            label: function(context) {
+                            label: (ctx) => {
                                 return 'Doanh thu: ' + new Intl.NumberFormat('vi-VN', {
                                     style: 'currency',
                                     currency: 'VND'
-                                }).format(context.parsed.y);
+                                }).format(ctx.parsed.y);
                             }
                         }
                     }
                 },
                 scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 12 },
+                            padding: 10,
+                            callback: (value) => new Intl.NumberFormat('vi-VN', {
+                                notation: 'compact',
+                                compactDisplay: 'short'
+                            }).format(value) + '₫'
+                        }
+                    },
                     x: {
                         grid: {
                             display: false
                         },
                         ticks: {
-                            font: {
-                                size: 12
-                            },
-                            color: '#6c757d'
+                            color: '#64748b',
+                            font: { size: 12, weight: '500' },
+                            padding: 10
+                        }
+                    }
+                }
+            }
+        });
+
+        // === 2. STATUS PIE CHART - IMPROVED VERSION ===
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        const statusLabels = [@Html.Raw(ViewBag.StatusLabels ?? "\"Chưa có dữ liệu\"")];
+        const statusData = [@Html.Raw(ViewBag.StatusData ?? "0")];
+
+        // Tính tổng để hiển thị phần trăm
+        const statusTotal = statusData.reduce((a, b) => a + b, 0);
+
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    data: statusData,
+                    backgroundColor: [
+                        '#f59e0b',  // Đang phục vụ - Orange
+                        '#0ea5e9',  // Chờ xác nhận - Sky Blue
+                        '#10b981',  // Đã thanh toán - Green
+                        '#ef4444',  // Đã hủy - Red
+                    ],
+                    borderWidth: 4,
+                    borderColor: '#fff',
+                    hoverOffset: 15,
+                    hoverBorderWidth: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 13, weight: '500' },
+                            color: '#64748b',
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            generateLabels: (chart) => {
+                                const datasets = chart.data.datasets;
+                                return chart.data.labels.map((label, i) => ({
+                                    text: `${label} (${datasets[0].data[i]})`,
+                                    fillStyle: datasets[0].backgroundColor[i],
+                                    hidden: false,
+                                    index: i
+                                }));
+                            }
                         }
                     },
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            font: {
-                                size: 12
-                            },
-                            color: '#6c757d',
-                            callback: function(value) {
-                                return new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND',
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                }).format(value);
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                        titleColor: '#fff',
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyColor: '#fff',
+                        bodyFont: { size: 13 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: (ctx) => {
+                                const value = ctx.parsed;
+                                const percentage = ((value / statusTotal) * 100).toFixed(1);
+                                return `${ctx.label}: ${value} đơn (${percentage}%)`;
                             }
                         }
                     }
@@ -389,73 +425,520 @@
             }
         });
 
-        // Real-time updates simulation
-        setInterval(() => {
-            // Simulate real-time data updates
-            const randomValue = Math.floor(Math.random() * 1000000) + 800000;
-            revenueChart.data.datasets[0].data.push(randomValue);
-            revenueChart.data.datasets[0].data.shift();
-            revenueChart.update('none');
-        }, 10000); // Update every 10 seconds
+        // === 3. TOP MENU BAR CHART - IMPROVED VERSION ===
+        const topMenuCtx = document.getElementById('topMenuChart').getContext('2d');
+        const topMenuLabels = [@Html.Raw(ViewBag.TopMenuLabels ?? "\"Chưa có dữ liệu\"")];
+        const topMenuQuantities = [@Html.Raw(ViewBag.TopMenuQuantities ?? "0")];
+        const topMenuRevenue = [@Html.Raw(ViewBag.TopMenuRevenue ?? "0")];
+
+        // Tạo gradient cho từng bar
+        const barColors = topMenuLabels.map((_, index) => {
+            const gradient = topMenuCtx.createLinearGradient(0, 0, 400, 0);
+            const hue = 140 - (index * 10); // From green to yellow-green
+            gradient.addColorStop(0, `hsla(${hue}, 70%, 50%, 0.8)`);
+            gradient.addColorStop(1, `hsla(${hue}, 70%, 40%, 0.9)`);
+            return gradient;
+        });
+
+        new Chart(topMenuCtx, {
+            type: 'bar',
+            data: {
+                labels: topMenuLabels,
+                datasets: [{
+                    label: 'Số lượng bán',
+                    data: topMenuQuantities,
+                    backgroundColor: barColors,
+                    borderColor: '#10b981',
+                    borderWidth: 0,
+                    borderRadius: 10,
+                    barThickness: 35,
+                    maxBarThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 13, weight: '600' },
+                            color: '#64748b'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                        titleColor: '#fff',
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyColor: '#fff',
+                        bodyFont: { size: 13 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function (context) {
+                                return 'Đã bán: ' + context.parsed.x + ' phần';
+                            },
+                            afterLabel: function (context) {
+                                const revenue = topMenuRevenue[context.dataIndex];
+                                return 'Doanh thu: ' + new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                }).format(revenue);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 12 },
+                            padding: 10,
+                            callback: (value) => value + ' phần'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#64748b',
+                            font: { size: 13, weight: '500' },
+                            padding: 10
+                        }
+                    }
+                }
+            }
+        });
     </script>
 
     <style>
-        .stats-card {
+        /* ===== MODERN DASHBOARD STYLES ===== */
+
+        /* Welcome Card */
+        .welcome-card-modern {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card-modern::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .welcome-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-subtitle {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wave {
+            display: inline-block;
+            animation: wave 2s ease-in-out infinite;
+        }
+
+        @@keyframes wave {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(20deg);
+            }
+
+            75% {
+                transform: rotate(-15deg);
+            }
+        }
+
+        .time-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .time-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
             transition: all 0.3s ease;
-            border-left: 4px solid transparent;
         }
-        
-        .stats-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+
+        .stat-card-primary::before {
+            background: linear-gradient(90deg, #667eea, #764ba2);
         }
-        
-        .stats-card .card-body:hover .avatar-lg {
-            transform: scale(1.1);
+
+        .stat-card-success::before {
+            background: linear-gradient(90deg, #10b981, #059669);
         }
-        
-        .avatar-lg {
-            height: 4rem;
-            width: 4rem;
-            transition: transform 0.3s ease;
+
+        .stat-card-info::before {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
         }
-        
-        .activity-timeline .activity-icon {
-            width: 35px;
-            height: 35px;
+
+        .stat-card-warning::before {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        
-        .activity-item {
+            margin-bottom: 1rem;
             position: relative;
+        }
+
+        .stat-card-primary .stat-icon {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            color: #667eea;
+        }
+
+        .stat-card-success .stat-icon {
+            background: linear-gradient(135deg, #10b98115, #05966915);
+            color: #10b981;
+        }
+
+        .stat-card-info .stat-icon {
+            background: linear-gradient(135deg, #3b82f615, #2563eb15);
+            color: #3b82f6;
+        }
+
+        .stat-card-warning .stat-icon {
+            background: linear-gradient(135deg, #f59e0b15, #d9770615);
+            color: #f59e0b;
+        }
+
+        .stat-icon i {
+            font-size: 2rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            line-height: 1;
+        }
+
+        .stat-trend {
+            font-size: 0.85rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .trend-up {
+            color: #10b981 !important;
+        }
+
+        .trend-up i {
+            color: #10b981;
+        }
+
+        .trend-up span {
+            font-weight: 600;
+        }
+
+        /* Chart Cards */
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, #fafafa, white);
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-title i {
+            color: #667eea;
+            font-size: 1.25rem;
+        }
+
+        .chart-subtitle {
+            font-size: 0.8125rem;
+            color: #94a3b8;
+            margin: 0.25rem 0 0 0;
+        }
+
+        .chart-body {
+            padding: 1.5rem;
+            min-height: 300px;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* Quick Action Cards */
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            color: #f59e0b;
+            font-size: 1.5rem;
+        }
+
+        .quick-action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .quick-action-primary::before {
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+        }
+
+        .quick-action-success::before {
+            background: linear-gradient(to bottom, #10b981, #059669);
+        }
+
+        .quick-action-info::before {
+            background: linear-gradient(to bottom, #3b82f6, #2563eb);
+        }
+
+        .quick-action-warning::before {
+            background: linear-gradient(to bottom, #f59e0b, #d97706);
+        }
+
+        .quick-action-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: transparent;
+        }
+
+        .quick-action-card:hover::before {
+            width: 100%;
+            opacity: 0.05;
+        }
+
+        .qa-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .quick-action-primary .qa-icon {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            color: #667eea;
+        }
+
+        .quick-action-success .qa-icon {
+            background: linear-gradient(135deg, #10b98115, #05966915);
+            color: #10b981;
+        }
+
+        .quick-action-info .qa-icon {
+            background: linear-gradient(135deg, #3b82f615, #2563eb15);
+            color: #3b82f6;
+        }
+
+        .quick-action-warning .qa-icon {
+            background: linear-gradient(135deg, #f59e0b15, #d9770615);
+            color: #f59e0b;
+        }
+
+        .qa-icon i {
+            font-size: 1.5rem;
+        }
+
+        .qa-content {
+            flex-grow: 1;
+        }
+
+        .qa-content h6 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+            color: #1e293b;
+        }
+
+        .qa-content p {
+            font-size: 0.8125rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        .qa-arrow {
+            color: #cbd5e1;
             transition: all 0.3s ease;
         }
-        
-        .activity-item:hover {
-            background-color: rgba(0, 0, 0, 0.02);
-            border-radius: 8px;
-            padding: 0.5rem;
-            margin: -0.5rem;
+
+        .qa-arrow i {
+            font-size: 1.25rem;
         }
-        
-        .welcome-card {
-            border: none !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+
+        .quick-action-card:hover .qa-arrow {
+            color: #64748b;
+            transform: translateX(4px);
         }
-        
-        .bg-primary-subtle { background-color: rgba(13, 110, 253, 0.1); }
-        .bg-success-subtle { background-color: rgba(25, 135, 84, 0.1); }
-        .bg-info-subtle { background-color: rgba(13, 202, 240, 0.1); }
-        .bg-warning-subtle { background-color: rgba(255, 193, 7, 0.1); }
-        
-        .fs-12 { font-size: 0.75rem; }
-        .fs-14 { font-size: 0.875rem; }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+
+        /* Animations */
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card,
+        .chart-card,
+        .quick-action-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .welcome-card-modern {
+                padding: 1.5rem;
+            }
+
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+
+            .time-display {
+                font-size: 2rem;
+            }
+
+            .stat-value {
+                font-size: 1.75rem;
+            }
         }
     </style>
 }

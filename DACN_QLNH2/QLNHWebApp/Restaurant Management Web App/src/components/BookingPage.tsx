@@ -30,7 +30,6 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
   const [formData, setFormData] = useState({
     customerName: '',
     phone: '',
-    email: '',
     date: '',
     time: '',
     guests: '',
@@ -220,7 +219,6 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
           tableId: selectedTable.id,
           customerName: formData.customerName,
           phone: formData.phone,
-          email: formData.email,
           bookingDate: formData.date,
           bookingTime: formData.time,
           guests: parseInt(formData.guests),
@@ -349,20 +347,6 @@ export const BookingPage: React.FC<BookingPageProps> = ({ onPageChange }) => {
                     required
                   />
                 </div>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="email@example.com (để nhận thông báo đơn hàng)"
-                />
               </div>
 
               {/* Date */}

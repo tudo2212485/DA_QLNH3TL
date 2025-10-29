@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using QLNHWebApp.Models;
 
 namespace QLNHWebApp.Controllers
 {
+    [Authorize(AuthenticationSchemes = "AdminAuth", Policy = "AllRoles")]
     public class AdminMenuController : Controller
     {
         private readonly RestaurantDbContext _context;
@@ -45,6 +47,7 @@ namespace QLNHWebApp.Controllers
             return View(result);
         }
 
+        [Authorize(Policy = "AdminAndStaff")] // Chỉ Admin và Nhân viên mới được tạo
         public IActionResult Create()
         {
             return View();
@@ -52,6 +55,7 @@ namespace QLNHWebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "AdminAndStaff")]
         public async Task<IActionResult> Create(MenuItem menuItem, IFormFile? imageFile)
         {
             try
@@ -123,6 +127,7 @@ namespace QLNHWebApp.Controllers
             }
         }
 
+        [Authorize(Policy = "AdminAndStaff")] // Chỉ Admin và Nhân viên mới được sửa
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -141,6 +146,7 @@ namespace QLNHWebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "AdminAndStaff")]
         public async Task<IActionResult> Edit(int id, MenuItem menuItem, IFormFile? imageFile)
         {
             if (id != menuItem.Id)
@@ -217,6 +223,7 @@ namespace QLNHWebApp.Controllers
             return View(menuItem);
         }
 
+        [Authorize(Policy = "AdminAndStaff")] // Chỉ Admin và Nhân viên mới được xóa
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -236,6 +243,7 @@ namespace QLNHWebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "AdminAndStaff")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var menuItem = await _context.MenuItems.FindAsync(id);

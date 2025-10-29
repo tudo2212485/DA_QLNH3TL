@@ -5,7 +5,7 @@ using QLNHWebApp.Models;
 
 namespace QLNHWebApp.Controllers
 {
-    [Authorize(AuthenticationSchemes = "AdminAuth")]
+    [Authorize(AuthenticationSchemes = "AdminAuth", Policy = "AdminAndStaff")]
     public class OrderManagementController : Controller
     {
         private readonly RestaurantDbContext _context;
@@ -119,8 +119,8 @@ namespace QLNHWebApp.Controllers
             return await Payment(request);
         }
 
-        // GET: Lịch sử hóa đơn (đã thanh toán)
-        public async Task<IActionResult> History(string? search, DateTime? fromDate, DateTime? toDate)
+        // GET: Lịch sử hóa đơn (đã thanh toán) - WITH PAGINATION
+        public async Task<IActionResult> History(string? search, DateTime? fromDate, DateTime? toDate, int page = 1, int pageSize = 20)
         {
             var query = _context.Orders
                 .Include(o => o.OrderItems)
@@ -145,21 +145,83 @@ namespace QLNHWebApp.Controllers
                 query = query.Where(o => o.Date <= toDate.Value);
             }
 
+            // Count total BEFORE pagination
+            var totalCount = await query.CountAsync();
+            
+            // Calculate statistics on full dataset
+            var allOrders = await query.ToListAsync();
+            ViewBag.TotalOrders = allOrders.Count;
+            ViewBag.TotalRevenue = allOrders.Sum(o => o.TotalPrice);
+            ViewBag.TotalCustomers = allOrders.Select(o => o.Phone).Distinct().Count();
+            ViewBag.AverageOrderValue = allOrders.Any() ? allOrders.Average(o => o.TotalPrice) : 0;
+            
+            // Apply PAGINATION (server-side)
             var orders = await query
                 .OrderByDescending(o => o.Date)
                 .ThenByDescending(o => o.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
-
-            // Set statistics ViewBag
-            ViewBag.TotalOrders = orders.Count;
-            ViewBag.TotalRevenue = orders.Sum(o => o.TotalPrice);
-            ViewBag.TotalCustomers = orders.Select(o => o.Phone).Distinct().Count();
             
+            // Pagination info
+            ViewBag.CurrentPage = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            ViewBag.TotalCount = totalCount;
             ViewBag.Search = search;
             ViewBag.FromDate = fromDate;
             ViewBag.ToDate = toDate;
 
             return View(orders);
+        }
+
+        // GET: API endpoint to get order details for modal
+        [HttpGet]
+        public async Task<IActionResult> GetOrderDetails(int id)
+        {
+            try
+            {
+                var order = await _context.Orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.MenuItem)
+                    .Include(o => o.Table)
+                    .FirstOrDefaultAsync(o => o.Id == id);
+
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy hóa đơn!" });
+                }
+
+                var result = new
+                {
+                    success = true,
+                    order = new
+                    {
+                        id = order.Id,
+                        customerName = order.CustomerName,
+                        phone = order.Phone,
+                        date = order.Date,
+                        time = order.Time,
+                        guests = order.Guests,
+                        tableName = order.Table?.Name,
+                        totalPrice = order.TotalPrice,
+                        status = order.Status,
+                        note = order.Note,
+                        items = order.OrderItems.Select(oi => new
+                        {
+                            menuItemName = oi.MenuItem?.Name ?? "Món ăn",
+                            quantity = oi.Quantity,
+                            price = oi.Price
+                        }).ToList()
+                    }
+                };
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
         }
 
         // POST: Xóa đơn hàng (chỉ xóa đơn đã thanh toán hoặc đã hủy)

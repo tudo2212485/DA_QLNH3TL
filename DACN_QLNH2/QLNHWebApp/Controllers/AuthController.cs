@@ -64,29 +64,30 @@ namespace QLNHWebApp.Controllers
 
             await HttpContext.SignInAsync("AdminAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
 
-            return RedirectToAction("Dashboard", "Admin");
+            // Redirect theo role
+            return employee.Role switch
+            {
+                "Admin" => RedirectToAction("Dashboard", "Admin"),
+                "Nhân viên" => RedirectToAction("Index", "OrderManagement"),
+                "Đầu bếp" => RedirectToAction("Index", "AdminMenu"),
+                _ => RedirectToAction("Index", "Home")
+            };
         }
 
         [HttpPost]
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
-            // Debug: Log để xem có vào action không
-            Console.WriteLine("=== AuthController.Logout được gọi ===");
-            
             await HttpContext.SignOutAsync("AdminAuth");
             
-            // Xóa tất cả cookies và session
+            // Xóa session
             HttpContext.Session.Clear();
             
-            // Test: Return một content đơn giản để debug
-            return Content("LOGOUT SUCCESS - AuthController.Logout was called!", "text/html");
-        }
-
-        [HttpGet]
-        public IActionResult TestLogout()
-        {
-            return Content("AuthController TestLogout action works!", "text/html");
+            // Hiển thị thông báo thành công
+            TempData["SuccessMessage"] = "Đăng xuất thành công!";
+            
+            // Redirect về trang đăng nhập
+            return RedirectToAction("Login", "Auth");
         }
 
         public IActionResult AccessDenied()

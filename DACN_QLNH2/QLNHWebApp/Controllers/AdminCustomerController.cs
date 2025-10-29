@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using QLNHWebApp.Models;
 
 namespace QLNHWebApp.Controllers
 {
+    [Authorize(AuthenticationSchemes = "AdminAuth", Policy = "AdminOnly")]
     public class AdminCustomerController : Controller
     {
         private readonly RestaurantDbContext _context;
@@ -61,16 +63,20 @@ namespace QLNHWebApp.Controllers
                 .OrderByDescending(c => c.LastOrderDate)
                 .ToList();
 
-            // Calculate statistics
-            var totalCustomers = customers.Count();
-            var activeCustomers = customers.Count(c => c.Status == "Active" || c.Status == "Confirmed");
-            var newCustomers = customers.Count(c => c.LastOrderDate >= DateTime.Today.AddDays(-30));
-            var vipCustomers = customers.Count(c => c.TotalSpent >= 1000000); // VIP nếu chi tiêu >= 1M
+            // Calculate statistics - LOGIC CHO QUẢN LÝ NHÀ HÀNG
+            var allCustomersData = ordersData; // Dùng toàn bộ data, không bị filter
+            
+            var totalCustomers = allCustomersData.Count();
+            var newCustomers = allCustomersData.Count(c => c.LastOrderDate >= DateTime.Today.AddDays(-30)); // Khách mới trong 30 ngày
+            var loyalCustomers = allCustomersData.Count(c => c.TotalOrders >= 5); // Khách thân thiết: >= 5 đơn
+            var vipCustomers = allCustomersData.Count(c => c.TotalSpent >= 1000000); // VIP: chi tiêu >= 1M
+            var totalRevenue = allCustomersData.Sum(c => c.TotalSpent);
 
             ViewBag.TotalCustomers = totalCustomers;
-            ViewBag.ActiveCustomers = activeCustomers;
             ViewBag.NewCustomers = newCustomers;
+            ViewBag.LoyalCustomers = loyalCustomers;
             ViewBag.VipCustomers = vipCustomers;
+            ViewBag.TotalRevenue = totalRevenue;
 
             return View(customers);
         }

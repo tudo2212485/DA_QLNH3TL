@@ -295,27 +295,38 @@
             <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
                 <div class="sidebar-sticky pt-3">
                     <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")"
-                                href="@Url.Action("Dashboard", "Admin")">
-                                <i class="bx bx-tachometer"></i>
-                                Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "OrderManagement" ? "active" : "")"
-                                href="@Url.Action("Index", "OrderManagement")">
-                                <i class="bx bx-receipt"></i>
-                                Hóa đơn
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminBooking" ? "active" : "")"
-                                href="@Url.Action("Index", "AdminBooking")">
-                                <i class="bx bx-calendar"></i>
-                                Đặt bàn
-                            </a>
-                        </li>
+                        @* ===== ADMIN ONLY ===== *@
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")"
+                                    href="@Url.Action("Dashboard", "Admin")">
+                                    <i class="bx bx-tachometer"></i>
+                                    Dashboard
+                                </a>
+                            </li>
+                        }
+
+                        @* ===== ADMIN + NHÂN VIÊN ===== *@
+                        @if (User.IsInRole("Admin") || User.IsInRole("Nhân viên"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "OrderManagement" ? "active" : "")"
+                                    href="@Url.Action("Index", "OrderManagement")">
+                                    <i class="bx bx-receipt"></i>
+                                    Hóa đơn
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminBooking" ? "active" : "")"
+                                    href="@Url.Action("Index", "AdminBooking")">
+                                    <i class="bx bx-calendar"></i>
+                                    Đặt bàn
+                                </a>
+                            </li>
+                        }
+
+                        @* ===== TẤT CẢ (Admin, Nhân viên, Đầu bếp) ===== *@
                         <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminMenu" ? "active" : "")"
                                 href="@Url.Action("Index", "AdminMenu")">
@@ -323,27 +334,32 @@
                                 Thực đơn
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Employees" ? "active" : "")"
-                                href="@Url.Action("Employees", "Admin")">
-                                <i class="bx bx-group"></i>
-                                Nhân viên
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminCustomer" ? "active" : "")"
-                                href="@Url.Action("Index", "AdminCustomer")">
-                                <i class="bx bx-user"></i>
-                                Khách hàng
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Settings" ? "active" : "")"
-                                href="@Url.Action("Index", "Settings")">
-                                <i class="bx bx-cog"></i>
-                                Thiết lập hệ thống
-                            </a>
-                        </li>
+
+                        @* ===== ADMIN ONLY ===== *@
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Employees" ? "active" : "")"
+                                    href="@Url.Action("Employees", "Admin")">
+                                    <i class="bx bx-group"></i>
+                                    Nhân viên
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminCustomer" ? "active" : "")"
+                                    href="@Url.Action("Index", "AdminCustomer")">
+                                    <i class="bx bx-user"></i>
+                                    Khách hàng
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Settings" ? "active" : "")"
+                                    href="@Url.Action("Index", "Settings")">
+                                    <i class="bx bx-cog"></i>
+                                    Thiết lập hệ thống
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </nav>

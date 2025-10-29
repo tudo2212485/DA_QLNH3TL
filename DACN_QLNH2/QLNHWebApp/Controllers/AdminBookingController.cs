@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using QLNHWebApp.Models;
 
 namespace QLNHWebApp.Controllers
 {
+    [Authorize(AuthenticationSchemes = "AdminAuth", Policy = "AdminAndStaff")]
     public class AdminBookingController : Controller
     {
         private readonly RestaurantDbContext _context;
