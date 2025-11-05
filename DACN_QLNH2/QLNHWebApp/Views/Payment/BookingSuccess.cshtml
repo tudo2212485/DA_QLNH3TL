@@ -1,0 +1,517 @@
+@model QLNHWebApp.Models.TableBooking
+@{
+    ViewData["Title"] = "Đặt bàn thành công";
+    decimal totalAmount = 0;
+    if (Model.OrderItems != null)
+    {
+        totalAmount = Model.OrderItems.Sum(oi => oi.Price * oi.Quantity);
+    }
+}
+
+<style>
+    .success-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 60px 0;
+    }
+
+    .success-main-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        animation: slideUp 0.6s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .success-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        padding: 50px 30px;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .success-header::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: ripple 3s infinite;
+    }
+
+    @@keyframes ripple {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.5);
+            opacity: 1;
+        }
+    }
+
+    .success-icon {
+        position: relative;
+        z-index: 1;
+    }
+
+    .success-icon i {
+        font-size: 80px;
+        animation: checkScale 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+    }
+
+    @@keyframes checkScale {
+        0% {
+            transform: scale(0) rotate(-45deg);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.2) rotate(10deg);
+        }
+        100% {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+        }
+    }
+
+    .success-header h1 {
+        font-size: 36px;
+        font-weight: 800;
+        margin: 20px 0 10px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .success-header p {
+        font-size: 18px;
+        opacity: 0.95;
+        position: relative;
+        z-index: 1;
+    }
+
+    .info-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+
+    .info-card h5 {
+        color: #667eea;
+        font-weight: 700;
+        margin-bottom: 25px;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .info-card h5 i {
+        font-size: 24px;
+        margin-right: 12px;
+        padding: 8px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.2);
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 0;
+        border-bottom: 2px solid #dee2e6;
+        transition: all 0.3s;
+    }
+
+    .detail-row:hover {
+        background: white;
+        margin: 0 -15px;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #495057;
+        display: flex;
+        align-items: center;
+    }
+
+    .detail-label i {
+        margin-right: 10px;
+        color: #667eea;
+        width: 25px;
+        text-align: center;
+    }
+
+    .detail-value {
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .badge-booking {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-size: 18px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .menu-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .menu-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    }
+
+    .menu-item-name {
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .menu-item-quantity {
+        background: #667eea;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 14px;
+        margin: 0 10px;
+    }
+
+    .menu-item-price {
+        font-weight: 700;
+        color: #10b981;
+        font-size: 16px;
+    }
+
+    .total-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .total-label {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .total-amount {
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .note-section {
+        background: #fff3cd;
+        border-left: 5px solid #ffc107;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .note-section strong {
+        color: #856404;
+    }
+
+    .note-section p {
+        color: #856404;
+        margin: 5px 0 0;
+    }
+
+    .info-alert {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);
+        border: none;
+        border-left: 5px solid #3b82f6;
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px;
+    }
+
+    .info-alert h6 {
+        color: #1e40af;
+        font-weight: 700;
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .info-alert ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .info-alert li {
+        color: #1e3a8a;
+        margin-bottom: 8px;
+        font-size: 15px;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        padding: 30px;
+        flex-wrap: wrap;
+    }
+
+    .btn-home {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 15px 40px;
+        font-size: 18px;
+        font-weight: 700;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-home:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.6);
+        color: white;
+    }
+
+    .btn-print {
+        background: white;
+        border: 3px solid #667eea;
+        color: #667eea;
+        padding: 15px 40px;
+        font-size: 18px;
+        font-weight: 700;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-print:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #fbbf24;
+        animation: confettiFall 3s linear infinite;
+    }
+
+    @@keyframes confettiFall {
+        to {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+    @@media print {
+        .success-container {
+            background: white;
+            padding: 20px;
+        }
+        .btn-home, .btn-print, .info-alert {
+            display: none !important;
+        }
+        .success-main-card {
+            box-shadow: none;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .success-header h1 {
+            font-size: 28px;
+        }
+
+        .success-icon i {
+            font-size: 60px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-home, .btn-print {
+            width: 100%;
+        }
+
+        .detail-row {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .menu-item {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+
+<div class="success-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="success-main-card">
+                    <!-- Success Header -->
+                    <div class="success-header">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h1>Đặt bàn thành công! 🎉</h1>
+                        <p>Cảm ơn bạn đã tin tướng và đặt bàn tại nhà hàng chúng tôi</p>
+                    </div>
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success m-4">
+                            <i class="fas fa-info-circle me-2"></i>@TempData["SuccessMessage"]
+                        </div>
+                    }
+
+                    <!-- Booking Details -->
+                    <div class="info-card">
+                        <h5><i class="fas fa-receipt"></i>Chi tiết đặt bàn</h5>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="fas fa-hashtag"></i>Mã đặt bàn
+                            </span>
+                            <span class="detail-value">
+                                <span class="badge-booking">#@Model.Id</span>
+                            </span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="fas fa-user"></i>Khách hàng
+                            </span>
+                            <span class="detail-value">@Model.CustomerName</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="fas fa-phone"></i>Số điện thoại
+                            </span>
+                            <span class="detail-value">@Model.Phone</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="fas fa-chair"></i>Bàn
+                            </span>
+                            <span class="detail-value">@Model.Table?.Name (@Model.Table?.Floor)</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="fas fa-calendar-day"></i>Ngày đặt
+                            </span>
+                            <span class="detail-value">@Model.BookingDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="fas fa-clock"></i>Giờ đặt
+                            </span>
+                            <span class="detail-value">@Model.BookingTime</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="fas fa-users"></i>Số khách
+                            </span>
+                            <span class="detail-value">@Model.Guests người</span>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <div class="note-section">
+                                <strong><i class="fas fa-sticky-note me-2"></i>Ghi chú:</strong>
+                                <p>@Model.Note</p>
+                            </div>
+                        }
+
+                        @if (Model.OrderItems != null && Model.OrderItems.Any())
+                        {
+                            <hr style="margin: 30px 0;">
+                            <h5><i class="fas fa-utensils"></i>Món ăn đã đặt</h5>
+                            
+                            @foreach (var item in Model.OrderItems)
+                            {
+                                <div class="menu-item">
+                                    <span class="menu-item-name">@item.MenuItem?.Name</span>
+                                    <div style="display: flex; align-items: center;">
+                                        <span class="menu-item-quantity">× @item.Quantity</span>
+                                        <span class="menu-item-price">@((item.Price * item.Quantity).ToString("N0")) đ</span>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="total-section">
+                                <span class="total-label">
+                                    <i class="fas fa-money-bill-wave me-2"></i>Tổng cộng
+                                </span>
+                                <span class="total-amount">@totalAmount.ToString("N0") đ</span>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Important Info -->
+                    <div class="info-alert">
+                        <h6><i class="fas fa-lightbulb me-2"></i>Thông tin quan trọng</h6>
+                        <ul>
+                            <li>✓ Vui lòng đến nhà hàng <strong>đúng giờ đã đặt</strong></li>
+                            <li>✓ Chúng tôi sẽ <strong>liên hệ với bạn</strong> để xác nhận đặt bàn</li>
+                            <li>✓ Đặt bàn của bạn đang ở trạng thái <strong>"Chờ xác nhận"</strong></li>
+                            <li>✓ Nếu cần hỗ trợ, vui lòng gọi: <strong>(028) 1234 5678</strong></li>
+                        </ul>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="action-buttons">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-home">
+                            <i class="fas fa-home me-2"></i>Về trang chủ
+                        </a>
+                        <button onclick="window.print()" class="btn btn-print">
+                            <i class="fas fa-print me-2"></i>In phiếu đặt bàn
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

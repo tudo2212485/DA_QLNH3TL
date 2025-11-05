@@ -234,6 +234,30 @@
                                                 <span class="info-value">@order.Guests người</span>
                                             </div>
                                         </div>
+                                        
+                                        @if (order.ServiceStartTime.HasValue)
+                                        {
+                                            <div class="info-item">
+                                                <div class="info-icon info-time" style="background-color: #10b981;">
+                                                    <i class="bx bx-time-five"></i>
+                                                </div>
+                                                <div class="info-content">
+                                                    <span class="info-label">Thời gian phục vụ</span>
+                                                    <span class="info-value">
+                                                        @if (order.ServiceEndTime.HasValue)
+                                                        {
+                                                            var duration = order.ServiceEndTime.Value - order.ServiceStartTime.Value;
+                                                            @($"{(int)duration.TotalMinutes} phút")
+                                                        }
+                                                        else
+                                                        {
+                                                            var duration = DateTime.Now - order.ServiceStartTime.Value;
+                                                            @($"{(int)duration.TotalMinutes} phút (đang phục vụ)")
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        }
                                     </div>
 
                                     <div class="order-items-section">
@@ -252,7 +276,7 @@
                                                             @(item.MenuItem?.Name ?? "Món ăn")
                                                         </div>
                                                         <div class="item-info">
-                                                            <span class="item-qty">x@item.Quantity</span>
+                                                            <span class="item-qty">x@(item.Quantity > 0 ? item.Quantity : 1)</span>
                                                             <span class="item-price">@item.Price.ToString("N0")₫</span>
                                                         </div>
                                                     </div>
@@ -346,7 +370,7 @@
                                                         {
                                                             <div class="item-row-table">
                                                                 <span>@(item.MenuItem?.Name ?? "Món ăn")</span>
-                                                                <span class="qty-badge-table">x@item.Quantity</span>
+                                                                <span class="qty-badge-table">x@(item.Quantity > 0 ? item.Quantity : 1)</span>
                                                             </div>
                                                         }
                                                         @if (order.OrderItems.Count() > 2)

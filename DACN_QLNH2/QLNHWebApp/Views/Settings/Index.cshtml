@@ -41,7 +41,7 @@
                     <span class="settings-badge">Bắt buộc</span>
                 </div>
                 <div class="settings-card-body">
-                    <form asp-action="UpdateGeneral" method="post" enctype="multipart/form-data">
+                    <form id="settingsForm" asp-controller="Settings" asp-action="UpdateGeneral" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
 
                         <div class="row g-4">
@@ -192,7 +192,7 @@
                     Thao tác nhanh
                 </div>
                 <div class="settings-info-body">
-                    <form asp-action="ResetToDefault" method="post"
+                    <form id="resetForm" asp-controller="Settings" asp-action="ResetToDefault" method="post"
                         onsubmit="return confirm('Bạn có chắc muốn khôi phục cài đặt mặc định? Hành động này sẽ xóa tất cả tùy chỉnh hiện tại!');">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="action-button action-reset">
@@ -227,6 +227,30 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        $(document).ready(function() {
+            // Form submit handling
+            $('#settingsForm').on('submit', function(e) {
+                console.log('Form submitting...');
+                const submitBtn = $(this).find('button[type="submit"]');
+                submitBtn.prop('disabled', true);
+                submitBtn.html('<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...');
+            });
+
+            // Reset form handling
+            $('#resetForm').on('submit', function(e) {
+                console.log('Reset form submitting...');
+                const submitBtn = $(this).find('button[type="submit"]');
+                submitBtn.prop('disabled', true);
+            });
+
+            // Debug: Check if forms are loaded
+            console.log('Settings forms loaded:');
+            console.log('- Main form:', $('#settingsForm').length);
+            console.log('- Reset form:', $('#resetForm').length);
+        });
+    </script>
 
     <style>
         /* Modern Page Header */

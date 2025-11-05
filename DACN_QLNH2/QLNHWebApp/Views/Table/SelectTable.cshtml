@@ -438,14 +438,22 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Store booking ID in session storage for payment
+                    if (data.bookingId) {
+                        sessionStorage.setItem('currentBookingId', data.bookingId);
+                    }
+                    
                     // Show success message with animation
                     Swal.fire({
                         icon: 'success',
                         title: 'Đặt bàn thành công!',
                         text: data.message || 'Cảm ơn bạn đã đặt bàn tại nhà hàng chúng tôi.',
-                        confirmButtonText: 'OK'
+                        confirmButtonText: 'Đến trang thanh toán',
+                        timer: 2000,
+                        timerProgressBar: true
                     }).then(() => {
-                        window.location.href = '@Url.Action("Index", "Home")';
+                        // Redirect to Payment page instead of Home
+                        window.location.href = '@Url.Action("Index", "Payment")?bookingId=' + (data.bookingId || '');
                     });
                 } else {
                     Swal.fire({

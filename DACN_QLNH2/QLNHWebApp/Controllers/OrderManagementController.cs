@@ -65,6 +65,13 @@ namespace QLNHWebApp.Controllers
                 }
 
                 order.Status = status;
+                
+                // Nếu chuyển sang "Đang phục vụ", ghi nhận thời gian bắt đầu
+                if (status == "Đang phục vụ" && order.ServiceStartTime == null)
+                {
+                    order.ServiceStartTime = DateTime.Now;
+                }
+                
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = $"Đã cập nhật trạng thái thành '{status}'!" });
@@ -91,8 +98,10 @@ namespace QLNHWebApp.Controllers
                     return Json(new { success = false, message = "Không tìm thấy đơn hàng!" });
                 }
 
-                // Cập nhật trạng thái
+                // Cập nhật trạng thái và thời gian kết thúc phục vụ
                 order.Status = "Đã thanh toán";
+                order.ServiceEndTime = DateTime.Now;
+                
                 await _context.SaveChangesAsync();
 
                 return Json(new { 
@@ -469,6 +478,11 @@ namespace QLNHWebApp.Controllers
                 }
 
                 var order = orderItem.Order;
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng!" });
+                }
+                
                 _context.OrderItems.Remove(orderItem);
 
                 // Cập nhật lại tổng tiền
@@ -512,6 +526,11 @@ namespace QLNHWebApp.Controllers
 
                 // Cập nhật lại tổng tiền
                 var order = orderItem.Order;
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng!" });
+                }
+                
                 order.TotalPrice = order.OrderItems.Sum(oi => oi.Price * oi.Quantity);
                 await _context.SaveChangesAsync();
 

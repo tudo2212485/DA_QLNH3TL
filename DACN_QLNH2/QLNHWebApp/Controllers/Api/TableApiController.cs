@@ -209,6 +209,10 @@ namespace QLNHWebApp.Controllers.Api
                 
                 Console.WriteLine($"✅ Booking saved! ID: {booking.Id}, Status: {booking.Status}");
 
+                // Store booking ID in session for payment page
+                HttpContext.Session.SetInt32("CurrentBookingId", booking.Id);
+                Console.WriteLine($"💾 Stored booking ID {booking.Id} in session");
+
                 // Thêm món ăn vào booking nếu có
                 if (request.OrderItems != null && request.OrderItems.Any())
                 {

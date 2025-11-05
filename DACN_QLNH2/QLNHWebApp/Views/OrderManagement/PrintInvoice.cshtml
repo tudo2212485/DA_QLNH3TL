@@ -254,19 +254,13 @@
             </table>
         </div>
 
-        <!-- Signature Section -->
-        <div class="signature-section">
-            <div class="signature-box">
-                <p>Khách hàng</p>
-                <div class="signature-line">
-                    (Ký và ghi rõ họ tên)
-                </div>
-            </div>
-            <div class="signature-box">
-                <p>Thu ngân</p>
-                <div class="signature-line">
-                    (Ký và ghi rõ họ tên)
-                </div>
+        <!-- Checkout Time Section -->
+        <div class="signature-section" style="justify-content: center;">
+            <div class="signature-box" style="text-align: center; width: 100%;">
+                <p style="margin-bottom: 5px;"><strong>Thời gian khách ra:</strong></p>
+                <p style="font-size: 14px; margin: 0;">
+                    @(Model.ServiceEndTime?.ToString("dd/MM/yyyy HH:mm") ?? DateTime.Now.ToString("dd/MM/yyyy HH:mm"))
+                </p>
             </div>
         </div>
 

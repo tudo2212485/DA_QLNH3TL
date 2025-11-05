@@ -14,35 +14,41 @@ namespace QLNHWebApp.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(int? orderId = null)
+        public async Task<IActionResult> Index(int? orderId = null, int? bookingId = null)
         {
             try 
             {
                 Console.WriteLine("PaymentController.Index called");
                 
-                // Lấy orderId từ session hoặc parameter
+                // Ưu tiên bookingId từ parameter hoặc session
+                var currentBookingId = bookingId ?? HttpContext.Session.GetInt32("CurrentBookingId");
+                Console.WriteLine($"CurrentBookingId: {currentBookingId}");
+                
+                // Nếu có bookingId, load thông tin từ TableBooking
+                if (currentBookingId != null)
+                {
+                    var tableBooking = await _context.TableBookings
+                        .Include(tb => tb.Table)
+                        .Include(tb => tb.OrderItems)
+                        .ThenInclude(oi => oi.MenuItem)
+                        .FirstOrDefaultAsync(tb => tb.Id == currentBookingId);
+                    
+                    if (tableBooking != null)
+                    {
+                        Console.WriteLine($"Found booking: {tableBooking.Id}");
+                        ViewBag.IsTableBooking = true;
+                        return View("Index_Booking", tableBooking);
+                    }
+                }
+                
+                // Nếu không có bookingId, thử tìm orderId
                 var currentOrderId = orderId ?? HttpContext.Session.GetInt32("CurrentOrderId");
                 Console.WriteLine($"CurrentOrderId: {currentOrderId}");
                 
                 if (currentOrderId == null)
                 {
-                    Console.WriteLine("No order ID found, getting latest order");
-                    
-                    // Thử lấy order mới nhất nếu không có session
-                    var latestOrder = await _context.Orders
-                        .Include(o => o.OrderItems)
-                        .ThenInclude(oi => oi.MenuItem)
-                        .OrderByDescending(o => o.Id)
-                        .FirstOrDefaultAsync();
-                        
-                    if (latestOrder != null)
-                    {
-                        Console.WriteLine($"Found latest order: {latestOrder.Id}");
-                        return View(latestOrder);
-                    }
-                    
-                    Console.WriteLine("No orders found, redirecting to booking");
-                    TempData["ErrorMessage"] = "Không tìm thấy đơn hàng. Vui lòng đặt bàn lại.";
+                    Console.WriteLine("No order ID or booking ID found in session or parameter");
+                    TempData["ErrorMessage"] = "Không tìm thấy thông tin đặt bàn. Vui lòng đặt bàn lại.";
                     return RedirectToAction("Table", "Booking");
                 }
 
@@ -60,6 +66,7 @@ namespace QLNHWebApp.Controllers
                 }
 
                 Console.WriteLine($"Returning view for order {order.Id}");
+                ViewBag.IsTableBooking = false;
                 return View("Index_Simple", order);
             }
             catch (Exception ex)
@@ -95,6 +102,49 @@ namespace QLNHWebApp.Controllers
             TempData["SuccessMessage"] = $"Thanh toán thành công! Mã đơn hàng: {order.Id}. Phương thức: {GetPaymentMethodName(paymentMethod)}";
             
             return RedirectToAction("Success", new { orderId = order.Id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ProcessBookingPayment(int bookingId, string paymentMethod)
+        {
+            var booking = await _context.TableBookings
+                .Include(tb => tb.Table)
+                .Include(tb => tb.OrderItems)
+                    .ThenInclude(oi => oi.MenuItem)
+                .FirstOrDefaultAsync(tb => tb.Id == bookingId);
+            
+            if (booking == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy thông tin đặt bàn.";
+                return RedirectToAction("Index");
+            }
+
+            // GIỮ NGUYÊN trạng thái "Pending" để admin xác nhận
+            // Không thay đổi gì trong booking, chỉ lưu thông tin thanh toán (có thể lưu vào bảng khác nếu cần)
+
+            // Xóa bookingId khỏi session
+            HttpContext.Session.Remove("CurrentBookingId");
+
+            // Hiển thị thông báo thành công
+            TempData["SuccessMessage"] = $"Đặt bàn thành công! Mã đặt bàn: #{bookingId}. Phương thức thanh toán: {GetPaymentMethodName(paymentMethod)}. Đơn đặt bàn đang chờ xác nhận từ nhà hàng.";
+            
+            return RedirectToAction("BookingSuccess", new { bookingId = booking.Id });
+        }
+
+        public async Task<IActionResult> BookingSuccess(int bookingId)
+        {
+            var booking = await _context.TableBookings
+                .Include(tb => tb.Table)
+                .Include(tb => tb.OrderItems)
+                .ThenInclude(oi => oi.MenuItem)
+                .FirstOrDefaultAsync(tb => tb.Id == bookingId);
+
+            if (booking == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(booking);
         }
 
         public async Task<IActionResult> Success(int orderId)

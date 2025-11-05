@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using QLNHWebApp.Models;
+using QLNHWebApp.Services;
 
 namespace QLNHWebApp.Controllers
 {
@@ -9,10 +10,12 @@ namespace QLNHWebApp.Controllers
     public class AdminBookingController : Controller
     {
         private readonly RestaurantDbContext _context;
+        private readonly TableAvailabilityService _tableService;
 
-        public AdminBookingController(RestaurantDbContext context)
+        public AdminBookingController(RestaurantDbContext context, TableAvailabilityService tableService)
         {
             _context = context;
+            _tableService = tableService;
         }
 
         public async Task<IActionResult> Index(string? status, string? search, DateTime? date)
@@ -215,6 +218,8 @@ namespace QLNHWebApp.Controllers
         {
             var booking = await _context.TableBookings
                 .Include(tb => tb.Table)
+                .Include(tb => tb.OrderItems)  // Load món ăn
+                    .ThenInclude(oi => oi.MenuItem)
                 .FirstOrDefaultAsync(tb => tb.Id == id);
 
             if (booking == null)
@@ -227,6 +232,12 @@ namespace QLNHWebApp.Controllers
                 .Where(t => t.IsActive)
                 .OrderBy(t => t.Floor)
                 .ThenBy(t => t.Name)
+                .ToListAsync();
+
+            // Load danh sách món ăn để chọn
+            ViewBag.MenuItems = await _context.MenuItems
+                .OrderBy(m => m.Category)
+                .ThenBy(m => m.Name)
                 .ToListAsync();
 
             return View(booking);
@@ -246,6 +257,36 @@ namespace QLNHWebApp.Controllers
             if (existingBooking == null)
             {
                 return NotFound();
+            }
+
+            // Kiểm tra xung đột thời gian nếu thay đổi bàn hoặc thời gian
+            if (existingBooking.TableId != booking.TableId 
+                || existingBooking.BookingDate != booking.BookingDate 
+                || existingBooking.BookingTime != booking.BookingTime)
+            {
+                var isAvailable = await _tableService.IsTableAvailableAsync(
+                    booking.TableId, 
+                    booking.BookingDate, 
+                    booking.BookingTime,
+                    id); // Exclude current booking
+
+                if (!isAvailable)
+                {
+                    TempData["ErrorMessage"] = $"Bàn đã được đặt trong khung giờ {booking.BookingTime}. Vui lòng chọn bàn hoặc giờ khác (cách nhau ít nhất 1 tiếng).";
+                    
+                    ViewBag.Tables = await _context.Tables
+                        .Where(t => t.IsActive)
+                        .OrderBy(t => t.Floor)
+                        .ThenBy(t => t.Name)
+                        .ToListAsync();
+                    
+                    ViewBag.MenuItems = await _context.MenuItems
+                        .OrderBy(m => m.Category)
+                        .ThenBy(m => m.Name)
+                        .ToListAsync();
+                        
+                    return View(booking);
+                }
             }
 
             // Update fields
@@ -273,6 +314,11 @@ namespace QLNHWebApp.Controllers
                     .Where(t => t.IsActive)
                     .OrderBy(t => t.Floor)
                     .ThenBy(t => t.Name)
+                    .ToListAsync();
+                
+                ViewBag.MenuItems = await _context.MenuItems
+                    .OrderBy(m => m.Category)
+                    .ThenBy(m => m.Name)
                     .ToListAsync();
                     
                 return View(booking);
@@ -374,6 +420,179 @@ namespace QLNHWebApp.Controllers
                 _ => status
             };
         }
+
+        // ===== QUẢN LÝ MÓN ĂN TRONG BOOKING =====
+        
+        // POST: Thêm món vào booking
+        [HttpPost]
+        public async Task<IActionResult> AddItemToBooking([FromBody] AddItemToBookingRequest request)
+        {
+            try
+            {
+                var booking = await _context.TableBookings
+                    .Include(tb => tb.OrderItems)
+                    .FirstOrDefaultAsync(tb => tb.Id == request.BookingId);
+
+                if (booking == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đặt bàn!" });
+                }
+
+                var menuItem = await _context.MenuItems.FindAsync(request.MenuItemId);
+                if (menuItem == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy món ăn!" });
+                }
+
+                OrderItem orderItem;
+                // Kiểm tra xem món đã có trong booking chưa
+                var existingItem = booking.OrderItems.FirstOrDefault(oi => oi.MenuItemId == request.MenuItemId);
+                if (existingItem != null)
+                {
+                    // Nếu đã có, tăng số lượng
+                    existingItem.Quantity += request.Quantity;
+                    orderItem = existingItem;
+                }
+                else
+                {
+                    // Nếu chưa có, thêm mới
+                    orderItem = new OrderItem
+                    {
+                        TableBookingId = request.BookingId,
+                        MenuItemId = request.MenuItemId,
+                        Quantity = request.Quantity,
+                        Price = menuItem.Price
+                    };
+                    booking.OrderItems.Add(orderItem);
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Trả về thông tin món vừa thêm/cập nhật
+                return Json(new
+                {
+                    success = true,
+                    message = "Đã thêm món vào đặt bàn!",
+                    item = new
+                    {
+                        id = orderItem.Id,
+                        menuItemName = menuItem.Name,
+                        price = orderItem.Price,
+                        quantity = orderItem.Quantity,
+                        total = orderItem.Price * orderItem.Quantity
+                    },
+                    isNew = existingItem == null
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        // POST: Xóa món khỏi booking
+        [HttpPost]
+        public async Task<IActionResult> RemoveItemFromBooking([FromBody] RemoveItemFromBookingRequest request)
+        {
+            try
+            {
+                var orderItem = await _context.OrderItems
+                    .FirstOrDefaultAsync(oi => oi.Id == request.OrderItemId && oi.TableBookingId == request.BookingId);
+
+                if (orderItem == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy món ăn!" });
+                }
+
+                _context.OrderItems.Remove(orderItem);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Đã xóa món khỏi đặt bàn!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        // POST: Cập nhật số lượng món trong booking
+        [HttpPost]
+        public async Task<IActionResult> UpdateItemQuantityInBooking([FromBody] UpdateItemQuantityRequest request)
+        {
+            try
+            {
+                var orderItem = await _context.OrderItems
+                    .FirstOrDefaultAsync(oi => oi.Id == request.OrderItemId && oi.TableBookingId == request.BookingId);
+
+                if (orderItem == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy món ăn!" });
+                }
+
+                if (request.Quantity <= 0)
+                {
+                    return Json(new { success = false, message = "Số lượng phải lớn hơn 0!" });
+                }
+
+                orderItem.Quantity = request.Quantity;
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Đã cập nhật số lượng!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+//         // GET: API - Kiểm tra trạng thái bàn real-time
+//         [HttpGet]
+//         public async Task<IActionResult> CheckTableStatus(int tableId, DateTime? date = null)
+//         {
+//             try
+//             {
+//                 var checkDate = date ?? DateTime.Today;
+//                 // CheckTableStatus removed - not compatible with new API
+//                 
+//                 return Json(new
+//                 {
+//                     success = true,
+//                     tableId = status.TableId,
+//                     status = status.Status,
+//                     message = status.Message,
+//                     bookingId = status.BookingId,
+//                     bookingTime = status.BookingTime,
+//                     customerName = status.CustomerName
+//                 });
+//             }
+//             catch (Exception ex)
+//             {
+//                 return Json(new { success = false, message = ex.Message });
+//             }
+//         }
+// 
+        // GET: API - Kiểm tra bàn có khả dụng không
+        [HttpGet]
+        public async Task<IActionResult> IsTableAvailable(int tableId, DateTime bookingDate, string bookingTime, int? excludeBookingId = null)
+        {
+            try
+            {
+                var isAvailable = await _tableService.IsTableAvailableAsync(tableId, bookingDate, bookingTime, excludeBookingId);
+                
+                return Json(new
+                {
+                    success = true,
+                    isAvailable = isAvailable,
+                    message = isAvailable 
+                        ? "Bàn khả dụng" 
+                        : $"Bàn đã được đặt trong khung giờ {bookingTime}. Vui lòng chọn giờ khác (cách nhau ít nhất 1 tiếng)."
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 
     // DTO classes for API requests
@@ -388,6 +607,26 @@ namespace QLNHWebApp.Controllers
         public string? Reason { get; set; }
     }
 
+    public class AddItemToBookingRequest
+    {
+        public int BookingId { get; set; }
+        public int MenuItemId { get; set; }
+        public int Quantity { get; set; }
+    }
+
+    public class RemoveItemFromBookingRequest
+    {
+        public int BookingId { get; set; }
+        public int OrderItemId { get; set; }
+    }
+
+    public class UpdateItemQuantityRequest
+    {
+        public int BookingId { get; set; }
+        public int OrderItemId { get; set; }
+        public int Quantity { get; set; }
+    }
+
     public class WalkInBookingRequest
     {
         public string CustomerName { get; set; } = string.Empty;
@@ -397,3 +636,4 @@ namespace QLNHWebApp.Controllers
         public string? Note { get; set; }
     }
 }
+

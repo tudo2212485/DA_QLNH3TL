@@ -4,50 +4,42 @@ using QLNHWebApp.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-// ===== SERILOG CONFIGURATION =====
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(new ConfigurationBuilder()
-        .AddJsonFile("appsettings.json")
-        .Build())
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
+try
+{
+    Console.WriteLine("=== APPLICATION STARTING ===");
+    
+    // ===== SERILOG CONFIGURATION ===== (Temporarily disabled)
+    /*
+    Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .Build())
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+        .CreateLogger();
+    */
 
-var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseSerilog(); // Use Serilog instead of default logging
+    Console.WriteLine("Creating WebApplication builder...");
+    var builder = WebApplication.CreateBuilder(args);
+    // builder.Host.UseSerilog(); // Use Serilog instead of default logging (Disabled)
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddControllers();
+    Console.WriteLine("Adding services...");
+    // Add services to the container.
+    builder.Services.AddControllersWithViews();
+    builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
     { 
-        Title = "🍽️ Restaurant Management API", 
+        Title = "API Quản Lý Nhà Hàng", 
         Version = "v1.0",
-        Description = @"
-# RESTful API - Hệ Thống Quản Lý Nhà Hàng
-
-## Chức năng chính:
-- **Menu Management**: CRUD món ăn, categories
-- **Order Management**: Quản lý đơn hàng, order items
-- **Table Booking**: Đặt bàn, kiểm tra availability
-- **Contact**: Liên hệ, feedback
-
-## Authentication:
-- Cookie-based authentication với BCrypt password hashing
-- Role-based access: Admin, Waiter, Chef, Cashier
-
-## Database:
-- SQLite với Entity Framework Core
-- Seed data có sẵn
-",
+        Description = "RESTful API cho hệ thống quản lý nhà hàng - ASP.NET Core 9",
         Contact = new Microsoft.OpenApi.Models.OpenApiContact
         {
-            Name = "Restaurant Management Team",
-            Email = "contact@restaurant.com"
+            Name = "Your Name",
+            Email = "your@email.com"
         }
     });
 });
@@ -72,24 +64,21 @@ builder.Services.AddAuthentication("AdminAuth")
         options.SlidingExpiration = true;
     });
 
-// ===== ROLE-BASED AUTHORIZATION POLICIES (3 ROLES) =====
 builder.Services.AddAuthorization(options =>
 {
-    // Policy 1: Chỉ Admin (quản lý nhân viên, thiết lập hệ thống)
-    options.AddPolicy("AdminOnly", policy => 
+    options.AddPolicy("AdminOnly", policy =>
         policy.RequireRole("Admin"));
     
-    // Policy 2: Admin + Nhân viên (tất cả trừ quản lý nhân viên & settings)
-    options.AddPolicy("AdminAndStaff", policy => 
-        policy.RequireRole("Admin", "Nhân viên"));
+    options.AddPolicy("AdminAndStaff", policy =>
+        policy.RequireRole("Admin", "Staff"));
     
-    // Policy 3: Tất cả (Admin, Nhân viên, Đầu bếp) - chỉ xem
-    options.AddPolicy("AllRoles", policy => 
-        policy.RequireRole("Admin", "Nhân viên", "Đầu bếp"));
+    options.AddPolicy("AllRoles", policy =>
+        policy.RequireRole("Admin", "Staff", "Customer"));
 });
 
 // Add DataSeeder service
-builder.Services.AddScoped<QLNHWebApp.Services.DataSeederService>();
+builder.Services.AddScoped<QLNHWebApp.Services.DataSeederService>(); // Re-enabled for AuthController
+builder.Services.AddScoped<TableAvailabilityService>(); // Table availability checking service
 builder.Services.AddDbContext<RestaurantDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -105,8 +94,10 @@ builder.Services.AddCors(options =>
     });
 });
 
+Console.WriteLine("Building application...");
 var app = builder.Build();
 
+Console.WriteLine("Configuring middleware...");
 // ===== GLOBAL EXCEPTION HANDLER =====
 app.UseExceptionHandler(errorApp =>
 {
@@ -136,18 +127,13 @@ app.UseExceptionHandler(errorApp =>
 });
 
 // Configure the HTTP request pipeline.
-// Enable Swagger for ALL environments (để dễ demo cho thầy)
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+if (app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Restaurant Management API v1.0");
-    c.RoutePrefix = "swagger"; // Swagger UI tại /swagger
-    c.DocumentTitle = "🍽️ Restaurant API Documentation";
-    c.DefaultModelsExpandDepth(2);
-    c.DisplayRequestDuration();
-});
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Tạm thời tắt để chạy HTTP only
 app.UseCors("AllowReactApp");
 app.UseRouting();
 app.UseAuthentication();
@@ -169,7 +155,7 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "mvc",
     pattern: "{controller}/{action=Index}/{id?}",
-    constraints: new { controller = "^(Payment|Booking|AdminBooking|AdminCustomer|AdminMenu|OrderManagement|Settings|Table|Test|TestData)$" });
+    constraints: new { controller = "^(Payment|Booking|AdminBooking|AdminCustomer|AdminMenu|OrderManagement|Settings|Table|Test)$" });
 
 // Minimal API endpoint để test thêm món ăn vào booking
 app.MapGet("/api/test/add-items/{bookingId:int}", async (int bookingId, RestaurantDbContext context) =>
@@ -229,11 +215,27 @@ app.MapControllerRoute(
 // Fallback to React app for client-side routing (only for unmatched routes)
 // app.MapFallbackToFile("index.html"); // Tạm thời comment để debug
 
-// Seed initial data (bao gồm đơn hàng demo cho dashboard)
+// Seed initial data - Temporarily disabled to allow app to start
+/*
 using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<QLNHWebApp.Services.DataSeederService>();
     await seeder.SeedAsync();
 }
+*/
 
-app.Run();
+    Console.WriteLine("Starting application...");
+    Console.WriteLine("Listening on: http://localhost:5000");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"FATAL ERROR: {ex.Message}");
+    Console.WriteLine($"STACK TRACE: {ex.StackTrace}");
+    Log.Fatal(ex, "Application terminated unexpectedly");
+    throw;
+}
+finally
+{
+    Log.CloseAndFlush();
+}

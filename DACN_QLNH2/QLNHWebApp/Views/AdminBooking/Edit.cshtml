@@ -3,6 +3,7 @@
     ViewData["Title"] = "Chỉnh sửa Đặt bàn";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     var tables = ViewBag.Tables as List<QLNHWebApp.Models.Table>;
+    var menuItems = ViewBag.MenuItems as List<QLNHWebApp.Models.MenuItem>;
 }
 
 <style>
@@ -10,6 +11,135 @@
         border: none;
         border-radius: 15px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .menu-item-card {
+        transition: all 0.3s;
+        cursor: pointer;
+        border: 2px solid #e0e0e0;
+        height: 100%;
+        position: relative;
+    }
+    
+    .menu-item-card:hover {
+        border-color: #007bff;
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,123,255,0.3);
+    }
+    
+    .menu-item-card.selected {
+        border-color: #28a745;
+        background-color: #f0fff4;
+    }
+    
+    .order-item-row {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s;
+    }
+    
+    .order-item-row:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .quantity-btn {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border-radius: 50%;
+    }
+    
+    .menu-category-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+    
+    .menu-item-image {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px 8px 0 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+    }
+    
+    .menu-item-info {
+        padding: 15px;
+    }
+    
+    .menu-item-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    
+    .menu-item-desc {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 10px;
+        height: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    .menu-item-price {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .search-box {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        padding: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .modal-body-scroll {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .category-filter {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+    }
+    
+    .category-filter .badge {
+        cursor: pointer;
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+    
+    .category-filter .badge:hover {
+        transform: scale(1.05);
+    }
+    
+    .category-filter .badge.active {
+        background-color: #007bff !important;
+        transform: scale(1.1);
     }
 </style>
 
@@ -223,9 +353,425 @@
             </div>
         </div>
     </div>
+
+    <!-- Quản lý Món ăn -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card edit-card">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-utensils me-2"></i>Quản lý món ăn
+                    </h6>
+                    <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addMenuItemModal">
+                        <i class="fas fa-plus me-1"></i>Thêm món
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="orderItemsList">
+                        @if (Model.OrderItems != null && Model.OrderItems.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 50%">Món ăn</th>
+                                            <th style="width: 20%" class="text-center">Số lượng</th>
+                                            <th style="width: 20%" class="text-end">Thành tiền</th>
+                                            <th style="width: 10%" class="text-center">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.OrderItems)
+                                        {
+                                            <tr class="order-item-row" data-item-id="@item.Id">
+                                                <td>
+                                                    <strong>@(item.MenuItem?.Name ?? "Món ăn")</strong><br>
+                                                    <small class="text-muted">@item.Price.ToString("N0")₫ / món</small>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="quantity-control d-inline-flex">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary quantity-btn" 
+                                                                onclick="updateQuantity(@item.Id, @item.Quantity - 1)">
+                                                            <i class="fas fa-minus"></i>
+                                                        </button>
+                                                        <span class="quantity-display fw-bold" id="qty-@item.Id">@item.Quantity</span>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary quantity-btn" 
+                                                                onclick="updateQuantity(@item.Id, @item.Quantity + 1)">
+                                                            <i class="fas fa-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end">
+                                                    <strong class="item-total" id="total-@item.Id">@((item.Price * item.Quantity).ToString("N0"))₫</strong>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm btn-danger" 
+                                                            onclick="removeItem(@item.Id)">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-active">
+                                            <td colspan="2" class="text-end"><strong>Tổng cộng:</strong></td>
+                                            <td class="text-end">
+                                                <strong class="text-success fs-5" id="grandTotal">
+                                                    @Model.OrderItems.Sum(oi => oi.Price * oi.Quantity).ToString("N0")₫
+                                                </strong>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-utensils fa-3x mb-3"></i>
+                                <p class="mb-0">Chưa có món ăn nào. Nhấn nút "Thêm món" để bắt đầu.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm món ăn -->
+<div class="modal fade" id="addMenuItemModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h5 class="modal-title">
+                    <i class="fas fa-utensils me-2"></i>Chọn món ăn
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="search-box">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control form-control-lg" id="searchMenuItem" 
+                                   placeholder="Tìm kiếm món ăn theo tên...">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="category-filter" id="categoryFilter">
+                            <span class="badge bg-primary active" data-category="all">
+                                <i class="fas fa-th-large me-1"></i>Tất cả
+                            </span>
+                            @if (menuItems != null && menuItems.Any())
+                            {
+                                var categories = menuItems.Select(m => m.Category).Distinct();
+                                foreach (var category in categories)
+                                {
+                                    <span class="badge bg-secondary" data-category="@category.ToLower()">
+                                        <i class="fas fa-tag me-1"></i>@category
+                                    </span>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-body modal-body-scroll">
+                <div class="row g-3" id="menuItemsGrid">
+                    @if (menuItems != null && menuItems.Any())
+                    {
+                        foreach (var item in menuItems.OrderBy(m => m.Category).ThenBy(m => m.Name))
+                        {
+                            <div class="col-md-4 col-lg-3 menu-item-search" 
+                                 data-name="@item.Name.ToLower()" 
+                                 data-category="@item.Category.ToLower()">
+                                <div class="card menu-item-card" onclick="selectMenuItem(@item.Id, '@Html.Raw(item.Name)', @item.Price)">
+                                    <div class="menu-item-image">
+                                        <i class="fas fa-utensils"></i>
+                                    </div>
+                                    <span class="badge menu-category-badge bg-info">@item.Category</span>
+                                    <div class="menu-item-info">
+                                        <div class="menu-item-name">@item.Name</div>
+                                        <div class="menu-item-desc">@(string.IsNullOrEmpty(item.Description) ? "Món ăn đặc sản" : item.Description)</div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="menu-item-price">@item.Price.ToString("N0")₫</span>
+                                            <button type="button" class="btn btn-sm btn-success" onclick="event.stopPropagation(); selectMenuItem(@item.Id, '@Html.Raw(item.Name)', @item.Price)">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Chưa có món ăn nào trong hệ thống.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // Set minimum date to today
-    document.getElementById('BookingDate').min = new Date().toISOString().split('T')[0];
+    const bookingId = @Model.Id;
+    let currentCategory = 'all';
+
+    // Tìm kiếm món ăn
+    document.getElementById('searchMenuItem')?.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        filterMenuItems(searchTerm, currentCategory);
+    });
+
+    // Filter theo category
+    document.querySelectorAll('.category-filter .badge').forEach(badge => {
+        badge.addEventListener('click', function() {
+            // Remove active từ tất cả
+            document.querySelectorAll('.category-filter .badge').forEach(b => b.classList.remove('active'));
+            // Add active cho badge được click
+            this.classList.add('active');
+            
+            currentCategory = this.dataset.category;
+            const searchTerm = document.getElementById('searchMenuItem').value.toLowerCase();
+            filterMenuItems(searchTerm, currentCategory);
+        });
+    });
+
+    function filterMenuItems(searchTerm, category) {
+        const items = document.querySelectorAll('.menu-item-search');
+        
+        items.forEach(item => {
+            const name = item.dataset.name;
+            const itemCategory = item.dataset.category;
+            
+            const matchSearch = !searchTerm || name.includes(searchTerm);
+            const matchCategory = category === 'all' || itemCategory === category;
+            
+            if (matchSearch && matchCategory) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // Chọn món ăn từ modal
+    function selectMenuItem(menuItemId, menuItemName, price) {
+        // Đóng modal trước
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addMenuItemModal'));
+        if (modal) {
+            modal.hide();
+        }
+        
+        Swal.fire({
+            title: `<i class="fas fa-utensils"></i> ${menuItemName}`,
+            html: `
+                <div class="text-start">
+                    <p class="mb-3"><strong>Giá:</strong> <span class="text-success">${price.toLocaleString()}₫</span></p>
+                    <label class="form-label"><strong>Số lượng:</strong></label>
+                </div>
+            `,
+            input: 'number',
+            inputValue: 1,
+            inputAttributes: {
+                min: 1,
+                max: 100,
+                step: 1,
+                class: 'form-control form-control-lg text-center'
+            },
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-check me-1"></i>Thêm vào đặt bàn',
+            cancelButtonText: '<i class="fas fa-times me-1"></i>Hủy',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            customClass: {
+                confirmButton: 'btn btn-success btn-lg',
+                cancelButton: 'btn btn-secondary btn-lg'
+            },
+            inputValidator: (value) => {
+                if (!value || value < 1) {
+                    return 'Số lượng phải lớn hơn 0!'
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                addMenuItem(menuItemId, parseInt(result.value), menuItemName);
+            }
+        });
+    }
+
+    // Thêm món vào booking
+    function addMenuItem(menuItemId, quantity, menuItemName) {
+        // Show loading
+        Swal.fire({
+            title: 'Đang xử lý...',
+            html: '<i class="fas fa-spinner fa-spin fa-3x text-primary"></i>',
+            showConfirmButton: false,
+            allowOutsideClick: false
+        });
+
+        $.ajax({
+            url: '@Url.Action("AddItemToBooking")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                bookingId: bookingId,
+                menuItemId: menuItemId,
+                quantity: quantity
+            }),
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        html: `<p>Đã thêm <strong>${quantity}x ${menuItemName}</strong></p>`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: response.message
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi kết nối!',
+                    text: 'Không thể kết nối đến server. Vui lòng thử lại.'
+                });
+            }
+        });
+    }
+
+    // Cập nhật số lượng
+    function updateQuantity(orderItemId, newQuantity) {
+        if (newQuantity < 1) {
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                text: 'Bạn muốn xóa món này khỏi đặt bàn?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-trash me-1"></i>Xóa',
+                cancelButtonText: '<i class="fas fa-times me-1"></i>Hủy',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    removeItem(orderItemId);
+                }
+            });
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("UpdateItemQuantityInBooking")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                bookingId: bookingId,
+                orderItemId: orderItemId,
+                quantity: newQuantity
+            }),
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: response.message
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Không thể kết nối đến server'
+                });
+            }
+        });
+    }
+
+    // Xóa món
+    function removeItem(orderItemId) {
+        Swal.fire({
+            title: 'Xác nhận xóa?',
+            text: 'Bạn có chắc muốn xóa món này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-trash me-1"></i>Xóa',
+            cancelButtonText: '<i class="fas fa-times me-1"></i>Hủy',
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '@Url.Action("RemoveItemFromBooking")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        bookingId: bookingId,
+                        orderItemId: orderItemId
+                    }),
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Đã xóa!',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi!',
+                                text: response.message
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: 'Không thể kết nối đến server'
+                        });
+                    }
+                });
+            }
+        });
+    }
+</script>
+
+<!-- Load External JS -->
+<script src="~/js/booking-menu-manager.js"></script>
+<script>
+    // Initialize
+    initBookingMenuManager(@Model.Id);
 </script>

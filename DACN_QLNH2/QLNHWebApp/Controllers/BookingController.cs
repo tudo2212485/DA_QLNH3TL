@@ -50,26 +50,33 @@ namespace QLNHWebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Table(string customerName, string phone, string date, string time, int guests, string note)
         {
+            // Save booking info to session first
+            var bookingInfo = new BookingInfo
+            {
+                CustomerName = customerName ?? "",
+                Phone = phone ?? "",
+                Date = date ?? "",
+                Time = time ?? "",
+                Guests = guests,
+                Note = note ?? ""
+            };
+            HttpContext.Session.SetObjectAsJson("BookingInfo", bookingInfo);
+
             try
             {
-                // Save booking info to session first
-                var bookingInfo = new BookingInfo
-                {
-                    CustomerName = customerName ?? "",
-                    Phone = phone ?? "",
-                    Date = date ?? "",
-                    Time = time ?? "",
-                    Guests = guests,
-                    Note = note ?? ""
-                };
-                HttpContext.Session.SetObjectAsJson("BookingInfo", bookingInfo);
-
                 // Validate input
                 if (string.IsNullOrEmpty(customerName) || string.IsNullOrEmpty(phone) || 
                     string.IsNullOrEmpty(date) || string.IsNullOrEmpty(time))
                 {
                     TempData["ErrorMessage"] = "Vui lòng điền đầy đủ thông tin bắt buộc.";
-                    return View();
+                    return View(bookingInfo);
+                }
+
+                // Validate date format
+                if (!DateTime.TryParse(date, out DateTime bookingDate))
+                {
+                    TempData["ErrorMessage"] = "Ngày đặt không hợp lệ.";
+                    return View(bookingInfo);
                 }
 
                 // Get cart items from session (optional)
@@ -100,7 +107,7 @@ namespace QLNHWebApp.Controllers
                 {
                     CustomerName = customerName,
                     Phone = phone,
-                    Date = DateTime.Parse(date),
+                    Date = bookingDate,
                     Time = time,
                     Guests = guests,
                     Note = note ?? "",
@@ -112,21 +119,29 @@ namespace QLNHWebApp.Controllers
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
 
+                Console.WriteLine($"✅ Order created successfully! Order ID: {order.Id}");
+
                 // Store order ID in session for payment
                 HttpContext.Session.SetInt32("CurrentOrderId", order.Id);
+                
+                // Store success message
+                TempData["SuccessMessage"] = $"Đặt bàn thành công! Mã đơn: #{order.Id}";
 
-                // Clear cart
+                // Clear cart after successful booking
                 HttpContext.Session.Remove("Cart");
+                HttpContext.Session.Remove("BookingInfo");
 
-                // Redirect to payment
+                // ALWAYS redirect to payment page after successful booking
+                Console.WriteLine($"🔄 Redirecting to Payment page...");
                 return RedirectToAction("Index", "Payment");
             }
             catch (Exception ex)
             {
                 // Log the exception for debugging
-                Console.WriteLine($"Booking error: {ex.Message}");
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại.";
-                return View();
+                Console.WriteLine($"❌ Booking error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                TempData["ErrorMessage"] = $"Có lỗi xảy ra khi đặt bàn: {ex.Message}";
+                return View(bookingInfo);
             }
         }
     }

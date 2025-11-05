@@ -66,6 +66,12 @@ namespace QLNHWebApp.Models
         [StringLength(50, ErrorMessage = "Trạng thái không quá 50 ký tự")]
         public string Status { get; set; } = "Chờ xác nhận";
         
+        // Thời gian bắt đầu phục vụ
+        public DateTime? ServiceStartTime { get; set; }
+        
+        // Thời gian kết thúc phục vụ (thanh toán)
+        public DateTime? ServiceEndTime { get; set; }
+        
         public int? TableId { get; set; }
         public Table? Table { get; set; }
         
