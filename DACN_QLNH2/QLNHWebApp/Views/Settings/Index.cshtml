@@ -41,7 +41,8 @@
                     <span class="settings-badge">Bắt buộc</span>
                 </div>
                 <div class="settings-card-body">
-                    <form id="settingsForm" asp-controller="Settings" asp-action="UpdateGeneral" method="post" enctype="multipart/form-data">
+                    <form id="settingsForm" asp-controller="Settings" asp-action="UpdateGeneral" method="post"
+                        enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
 
                         <div class="row g-4">
@@ -229,9 +230,9 @@
     }
 
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Form submit handling
-            $('#settingsForm').on('submit', function(e) {
+            $('#settingsForm').on('submit', function (e) {
                 console.log('Form submitting...');
                 const submitBtn = $(this).find('button[type="submit"]');
                 submitBtn.prop('disabled', true);
@@ -239,7 +240,7 @@
             });
 
             // Reset form handling
-            $('#resetForm').on('submit', function(e) {
+            $('#resetForm').on('submit', function (e) {
                 console.log('Reset form submitting...');
                 const submitBtn = $(this).find('button[type="submit"]');
                 submitBtn.prop('disabled', true);

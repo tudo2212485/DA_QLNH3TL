@@ -12,7 +12,7 @@
         border-radius: 15px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
-    
+
     .menu-item-card {
         transition: all 0.3s;
         cursor: pointer;
@@ -20,41 +20,41 @@
         height: 100%;
         position: relative;
     }
-    
+
     .menu-item-card:hover {
         border-color: #007bff;
         transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0,123,255,0.3);
+        box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
     }
-    
+
     .menu-item-card.selected {
         border-color: #28a745;
         background-color: #f0fff4;
     }
-    
+
     .order-item-row {
         padding: 15px;
         border-bottom: 1px solid #eee;
         transition: background-color 0.2s;
     }
-    
+
     .order-item-row:hover {
         background-color: #f8f9fa;
     }
-    
+
     .quantity-control {
         display: flex;
         align-items: center;
         gap: 10px;
     }
-    
+
     .quantity-btn {
         width: 30px;
         height: 30px;
         padding: 0;
         border-radius: 50%;
     }
-    
+
     .menu-category-badge {
         position: absolute;
         top: 10px;
@@ -62,7 +62,7 @@
         font-size: 0.7rem;
         padding: 3px 8px;
     }
-    
+
     .menu-item-image {
         width: 100%;
         height: 120px;
@@ -75,18 +75,18 @@
         color: white;
         font-size: 3rem;
     }
-    
+
     .menu-item-info {
         padding: 15px;
     }
-    
+
     .menu-item-name {
         font-weight: 600;
         font-size: 1.1rem;
         margin-bottom: 5px;
         color: #333;
     }
-    
+
     .menu-item-desc {
         font-size: 0.85rem;
         color: #666;
@@ -98,13 +98,13 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
     }
-    
+
     .menu-item-price {
         font-size: 1.2rem;
         font-weight: bold;
         color: #28a745;
     }
-    
+
     .search-box {
         position: sticky;
         top: 0;
@@ -113,30 +113,30 @@
         padding: 15px;
         border-bottom: 2px solid #f0f0f0;
     }
-    
+
     .modal-body-scroll {
         max-height: 60vh;
         overflow-y: auto;
     }
-    
+
     .category-filter {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
         margin-bottom: 15px;
     }
-    
+
     .category-filter .badge {
         cursor: pointer;
         padding: 8px 15px;
         font-size: 0.9rem;
         transition: all 0.2s;
     }
-    
+
     .category-filter .badge:hover {
         transform: scale(1.05);
     }
-    
+
     .category-filter .badge.active {
         background-color: #007bff !important;
         transform: scale(1.1);
@@ -172,21 +172,21 @@
                     <form method="post" action="@Url.Action("Edit", new { id = Model.Id })">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="Id" value="@Model.Id" />
-                        
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="CustomerName" class="form-label">
                                     Tên khách hàng <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control" id="CustomerName" name="CustomerName" 
-                                       value="@Model.CustomerName" required>
+                                <input type="text" class="form-control" id="CustomerName" name="CustomerName"
+                                    value="@Model.CustomerName" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="Phone" class="form-label">
                                     Số điện thoại <span class="text-danger">*</span>
                                 </label>
-                                <input type="tel" class="form-control" id="Phone" name="Phone" 
-                                       value="@Model.Phone" pattern="[0-9]{10}" required>
+                                <input type="tel" class="form-control" id="Phone" name="Phone" value="@Model.Phone"
+                                    pattern="[0-9]{10}" required>
                                 <div class="form-text">Nhập 10 chữ số</div>
                             </div>
                         </div>
@@ -196,8 +196,8 @@
                                 <label for="BookingDate" class="form-label">
                                     Ngày đặt <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" class="form-control" id="BookingDate" name="BookingDate" 
-                                       value="@Model.BookingDate.ToString("yyyy-MM-dd")" required>
+                                <input type="date" class="form-control" id="BookingDate" name="BookingDate"
+                                    value="@Model.BookingDate.ToString("yyyy-MM-dd")" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="BookingTime" class="form-label">
@@ -259,18 +259,21 @@
                         <div class="row">
                             <div class="col-md-8 mb-3">
                                 <label for="Note" class="form-label">Ghi chú</label>
-                                <textarea class="form-control" id="Note" name="Note" rows="3" 
-                                          placeholder="Ghi chú đặc biệt...">@Model.Note</textarea>
+                                <textarea class="form-control" id="Note" name="Note" rows="3"
+                                    placeholder="Ghi chú đặc biệt...">@Model.Note</textarea>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label for="Status" class="form-label">
                                     Trạng thái <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select" id="Status" name="Status" required>
-                                    <option value="Pending" selected="@(Model.Status == "Pending")">Chờ xác nhận</option>
-                                    <option value="Confirmed" selected="@(Model.Status == "Confirmed")">Đã xác nhận</option>
+                                    <option value="Pending" selected="@(Model.Status == "Pending")">Chờ xác nhận
+                                    </option>
+                                    <option value="Confirmed" selected="@(Model.Status == "Confirmed")">Đã xác nhận
+                                    </option>
                                     <option value="Cancelled" selected="@(Model.Status == "Cancelled")">Đã hủy</option>
-                                    <option value="Completed" selected="@(Model.Status == "Completed")">Hoàn thành</option>
+                                    <option value="Completed" selected="@(Model.Status == "Completed")">Hoàn thành
+                                    </option>
                                 </select>
                             </div>
                         </div>
@@ -362,7 +365,8 @@
                     <h6 class="m-0 font-weight-bold">
                         <i class="fas fa-utensils me-2"></i>Quản lý món ăn
                     </h6>
-                    <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addMenuItemModal">
+                    <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#addMenuItemModal">
                         <i class="fas fa-plus me-1"></i>Thêm món
                     </button>
                 </div>
@@ -390,23 +394,27 @@
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="quantity-control d-inline-flex">
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary quantity-btn" 
-                                                                onclick="updateQuantity(@item.Id, @item.Quantity - 1)">
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-secondary quantity-btn"
+                                                            onclick="updateQuantity(@item.Id, @item.Quantity - 1)">
                                                             <i class="fas fa-minus"></i>
                                                         </button>
-                                                        <span class="quantity-display fw-bold" id="qty-@item.Id">@item.Quantity</span>
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary quantity-btn" 
-                                                                onclick="updateQuantity(@item.Id, @item.Quantity + 1)">
+                                                        <span class="quantity-display fw-bold"
+                                                            id="qty-@item.Id">@item.Quantity</span>
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-secondary quantity-btn"
+                                                            onclick="updateQuantity(@item.Id, @item.Quantity + 1)">
                                                             <i class="fas fa-plus"></i>
                                                         </button>
                                                     </div>
                                                 </td>
                                                 <td class="text-end">
-                                                    <strong class="item-total" id="total-@item.Id">@((item.Price * item.Quantity).ToString("N0"))₫</strong>
+                                                    <strong class="item-total" id="total-@item.Id">@((item.Price *
+                                                                                                        item.Quantity).ToString("N0"))₫</strong>
                                                 </td>
                                                 <td class="text-center">
-                                                    <button type="button" class="btn btn-sm btn-danger" 
-                                                            onclick="removeItem(@item.Id)">
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        onclick="removeItem(@item.Id)">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </td>
@@ -445,13 +453,14 @@
 <div class="modal fade" id="addMenuItemModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="modal-header bg-gradient text-white"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <h5 class="modal-title">
                     <i class="fas fa-utensils me-2"></i>Chọn món ăn
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            
+
             <div class="search-box">
                 <div class="row align-items-center">
                     <div class="col-md-6">
@@ -459,8 +468,8 @@
                             <span class="input-group-text bg-light">
                                 <i class="fas fa-search"></i>
                             </span>
-                            <input type="text" class="form-control form-control-lg" id="searchMenuItem" 
-                                   placeholder="Tìm kiếm món ăn theo tên...">
+                            <input type="text" class="form-control form-control-lg" id="searchMenuItem"
+                                placeholder="Tìm kiếm món ăn theo tên...">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -482,17 +491,17 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="modal-body modal-body-scroll">
                 <div class="row g-3" id="menuItemsGrid">
                     @if (menuItems != null && menuItems.Any())
                     {
                         foreach (var item in menuItems.OrderBy(m => m.Category).ThenBy(m => m.Name))
                         {
-                            <div class="col-md-4 col-lg-3 menu-item-search" 
-                                 data-name="@item.Name.ToLower()" 
-                                 data-category="@item.Category.ToLower()">
-                                <div class="card menu-item-card" onclick="selectMenuItem(@item.Id, '@Html.Raw(item.Name)', @item.Price)">
+                            <div class="col-md-4 col-lg-3 menu-item-search" data-name="@item.Name.ToLower()"
+                                data-category="@item.Category.ToLower()">
+                                <div class="card menu-item-card"
+                                    onclick="selectMenuItem(@item.Id, '@Html.Raw(item.Name)', @item.Price)">
                                     <div class="menu-item-image">
                                         <i class="fas fa-utensils"></i>
                                     </div>
@@ -502,7 +511,8 @@
                                         <div class="menu-item-desc">@(string.IsNullOrEmpty(item.Description) ? "Món ăn đặc sản" : item.Description)</div>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="menu-item-price">@item.Price.ToString("N0")₫</span>
-                                            <button type="button" class="btn btn-sm btn-success" onclick="event.stopPropagation(); selectMenuItem(@item.Id, '@Html.Raw(item.Name)', @item.Price)">
+                                            <button type="button" class="btn btn-sm btn-success"
+                                                onclick="event.stopPropagation(); selectMenuItem(@item.Id, '@Html.Raw(item.Name)', @item.Price)">
                                                 <i class="fas fa-plus"></i>
                                             </button>
                                         </div>
@@ -520,7 +530,7 @@
                     }
                 </div>
             </div>
-            
+
             <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="fas fa-times me-1"></i>Đóng
@@ -535,19 +545,19 @@
     let currentCategory = 'all';
 
     // Tìm kiếm món ăn
-    document.getElementById('searchMenuItem')?.addEventListener('input', function(e) {
+    document.getElementById('searchMenuItem')?.addEventListener('input', function (e) {
         const searchTerm = e.target.value.toLowerCase();
         filterMenuItems(searchTerm, currentCategory);
     });
 
     // Filter theo category
     document.querySelectorAll('.category-filter .badge').forEach(badge => {
-        badge.addEventListener('click', function() {
+        badge.addEventListener('click', function () {
             // Remove active từ tất cả
             document.querySelectorAll('.category-filter .badge').forEach(b => b.classList.remove('active'));
             // Add active cho badge được click
             this.classList.add('active');
-            
+
             currentCategory = this.dataset.category;
             const searchTerm = document.getElementById('searchMenuItem').value.toLowerCase();
             filterMenuItems(searchTerm, currentCategory);
@@ -556,14 +566,14 @@
 
     function filterMenuItems(searchTerm, category) {
         const items = document.querySelectorAll('.menu-item-search');
-        
+
         items.forEach(item => {
             const name = item.dataset.name;
             const itemCategory = item.dataset.category;
-            
+
             const matchSearch = !searchTerm || name.includes(searchTerm);
             const matchCategory = category === 'all' || itemCategory === category;
-            
+
             if (matchSearch && matchCategory) {
                 item.style.display = '';
             } else {
@@ -579,7 +589,7 @@
         if (modal) {
             modal.hide();
         }
-        
+
         Swal.fire({
             title: `<i class="fas fa-utensils"></i> ${menuItemName}`,
             html: `
@@ -636,7 +646,7 @@
                 menuItemId: menuItemId,
                 quantity: quantity
             }),
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     Swal.fire({
                         icon: 'success',
@@ -655,7 +665,7 @@
                     });
                 }
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
@@ -695,7 +705,7 @@
                 orderItemId: orderItemId,
                 quantity: newQuantity
             }),
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     location.reload();
                 } else {
@@ -706,7 +716,7 @@
                     });
                 }
             },
-            error: function() {
+            error: function () {
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
@@ -737,7 +747,7 @@
                         bookingId: bookingId,
                         orderItemId: orderItemId
                     }),
-                    success: function(response) {
+                    success: function (response) {
                         if (response.success) {
                             Swal.fire({
                                 icon: 'success',
@@ -756,7 +766,7 @@
                             });
                         }
                     },
-                    error: function() {
+                    error: function () {
                         Swal.fire({
                             icon: 'error',
                             title: 'Lỗi!',

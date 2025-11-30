@@ -50,11 +50,11 @@ namespace QLNHWebApp.Controllers.Api
             {
                 // Debug: Log the parameters
                 Console.WriteLine($"GetTablesByFloor called with floor: '{floor}', guests: {guests}");
-                
+
                 // Get all tables first to debug
                 var allTables = await _context.Tables.Where(t => t.IsActive).ToListAsync();
                 Console.WriteLine($"Total active tables: {allTables.Count}");
-                
+
                 foreach (var table in allTables.Take(3))
                 {
                     Console.WriteLine($"Table: {table.Name}, Floor: '{table.Floor}', Capacity: {table.Capacity}");
@@ -74,12 +74,13 @@ namespace QLNHWebApp.Controllers.Api
                     .ToListAsync();
 
                 Console.WriteLine($"Filtered tables count: {tables.Count}");
-                return Ok(new { 
-                    requestedFloor = floor, 
+                return Ok(new
+                {
+                    requestedFloor = floor,
                     requestedGuests = guests,
                     totalTables = allTables.Count,
                     filteredTables = tables.Count,
-                    tables = tables 
+                    tables = tables
                 });
             }
             catch (Exception ex)
@@ -96,8 +97,8 @@ namespace QLNHWebApp.Controllers.Api
             try
             {
                 var isAvailable = !await _context.TableBookings
-                    .AnyAsync(tb => tb.TableId == tableId 
-                                  && tb.BookingDate.Date == bookingDate.Date 
+                    .AnyAsync(tb => tb.TableId == tableId
+                                  && tb.BookingDate.Date == bookingDate.Date
                                   && tb.BookingTime == bookingTime
                                   && tb.Status != "Cancelled");
 
@@ -117,8 +118,8 @@ namespace QLNHWebApp.Controllers.Api
             {
                 // Lấy danh sách ID của các bàn đã được đặt (trong orders đang hoạt động)
                 var occupiedTableIds = await _context.Orders
-                    .Where(o => o.Status == "Đang phục vụ" || 
-                               o.Status == "Chưa thanh toán" || 
+                    .Where(o => o.Status == "Đang phục vụ" ||
+                               o.Status == "Chưa thanh toán" ||
                                o.Status == "Đã xác nhận")
                     .Select(o => o.TableId)
                     .Distinct()
@@ -170,7 +171,7 @@ namespace QLNHWebApp.Controllers.Api
                 Console.WriteLine($"   - Time: {request.BookingTime}");
                 Console.WriteLine($"   - Guests: {request.Guests}");
                 Console.WriteLine($"   - Items count: {request.OrderItems?.Count ?? 0}");
-                
+
                 // Kiểm tra bàn có tồn tại và còn trống không
                 var table = await _context.Tables.FindAsync(request.TableId);
                 if (table == null)
@@ -180,8 +181,8 @@ namespace QLNHWebApp.Controllers.Api
 
                 // Kiểm tra bàn đã được đặt chưa
                 var existingBooking = await _context.TableBookings
-                    .FirstOrDefaultAsync(tb => tb.TableId == request.TableId 
-                                             && tb.BookingDate.Date == request.BookingDate.Date 
+                    .FirstOrDefaultAsync(tb => tb.TableId == request.TableId
+                                             && tb.BookingDate.Date == request.BookingDate.Date
                                              && tb.BookingTime == request.BookingTime
                                              && tb.Status != "Cancelled");
 
@@ -206,7 +207,7 @@ namespace QLNHWebApp.Controllers.Api
 
                 _context.TableBookings.Add(booking);
                 await _context.SaveChangesAsync();
-                
+
                 Console.WriteLine($"✅ Booking saved! ID: {booking.Id}, Status: {booking.Status}");
 
                 // Store booking ID in session for payment page

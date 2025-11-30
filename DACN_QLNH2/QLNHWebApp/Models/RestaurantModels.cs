@@ -8,25 +8,25 @@ namespace QLNHWebApp.Models
     public class MenuItem
     {
         public int Id { get; set; }
-        
+
         [Required(ErrorMessage = "Tên món ăn là bắt buộc")]
         [StringLength(100, MinimumLength = 2, ErrorMessage = "Tên món ăn phải từ 2-100 ký tự")]
         public string Name { get; set; } = string.Empty;
-        
+
         [StringLength(500, ErrorMessage = "Mô tả không quá 500 ký tự")]
         public string Description { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "Giá món ăn là bắt buộc")]
         [Range(1000, 10000000, ErrorMessage = "Giá phải từ 1,000đ đến 10,000,000đ")]
         public decimal Price { get; set; }
-        
+
         [Required(ErrorMessage = "Danh mục là bắt buộc")]
         [StringLength(50, ErrorMessage = "Danh mục không quá 50 ký tự")]
         public string Category { get; set; } = string.Empty;
-        
+
         [StringLength(500, ErrorMessage = "URL không quá 500 ký tự")]
         public string? ImageUrl { get; set; }
-        
+
         [JsonIgnore]
         public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
         [JsonIgnore]
@@ -36,45 +36,45 @@ namespace QLNHWebApp.Models
     public class Order
     {
         public int Id { get; set; }
-        
+
         [Required(ErrorMessage = "Tên khách hàng là bắt buộc")]
         [StringLength(100, MinimumLength = 2, ErrorMessage = "Tên phải từ 2-100 ký tự")]
         public string CustomerName { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "Số điện thoại là bắt buộc")]
         [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
         [RegularExpression(@"^(0|\+84)[0-9]{9,10}$", ErrorMessage = "Số điện thoại phải có 10-11 số")]
         public string Phone { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "Ngày đặt bàn là bắt buộc")]
         public DateTime Date { get; set; }
-        
+
         [Required(ErrorMessage = "Giờ đặt bàn là bắt buộc")]
         [RegularExpression(@"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", ErrorMessage = "Giờ không hợp lệ (HH:mm)")]
         public string Time { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "Số khách là bắt buộc")]
         [Range(1, 50, ErrorMessage = "Số khách phải từ 1 đến 50")]
         public int Guests { get; set; }
-        
+
         [StringLength(1000, ErrorMessage = "Ghi chú không quá 1000 ký tự")]
         public string? Note { get; set; }
-        
+
         [Range(0, 1000000000, ErrorMessage = "Tổng tiền không hợp lệ")]
         public decimal TotalPrice { get; set; }
-        
+
         [StringLength(50, ErrorMessage = "Trạng thái không quá 50 ký tự")]
         public string Status { get; set; } = "Chờ xác nhận";
-        
+
         // Thời gian bắt đầu phục vụ
         public DateTime? ServiceStartTime { get; set; }
-        
+
         // Thời gian kết thúc phục vụ (thanh toán)
         public DateTime? ServiceEndTime { get; set; }
-        
+
         public int? TableId { get; set; }
         public Table? Table { get; set; }
-        
+
         [JsonIgnore]
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
@@ -86,15 +86,15 @@ namespace QLNHWebApp.Models
         public Order? Order { get; set; }
         public int? TableBookingId { get; set; }
         public TableBooking? TableBooking { get; set; }
-        
+
         [Required(ErrorMessage = "Món ăn là bắt buộc")]
         public int MenuItemId { get; set; }
         public MenuItem MenuItem { get; set; } = null!;
-        
+
         [Required(ErrorMessage = "Số lượng là bắt buộc")]
         [Range(1, 100, ErrorMessage = "Số lượng phải từ 1 đến 100")]
         public int Quantity { get; set; }
-        
+
         [Required(ErrorMessage = "Giá là bắt buộc")]
         [Range(0, 10000000, ErrorMessage = "Giá không hợp lệ")]
         public decimal Price { get; set; }
@@ -103,20 +103,20 @@ namespace QLNHWebApp.Models
     public class ContactMessage
     {
         public int Id { get; set; }
-        
+
         [Required(ErrorMessage = "Tên là bắt buộc")]
         [StringLength(100, MinimumLength = 2, ErrorMessage = "Tên phải từ 2-100 ký tự")]
         public string Name { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "Email là bắt buộc")]
         [EmailAddress(ErrorMessage = "Email không hợp lệ")]
         [StringLength(150, ErrorMessage = "Email không quá 150 ký tự")]
         public string Email { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "Nội dung tin nhắn là bắt buộc")]
         [StringLength(2000, MinimumLength = 10, ErrorMessage = "Tin nhắn phải từ 10-2000 ký tự")]
         public string Message { get; set; } = string.Empty;
-        
+
         public DateTime Date { get; set; }
     }
 
@@ -145,28 +145,28 @@ namespace QLNHWebApp.Models
     public class Employee
     {
         public int Id { get; set; }
-        
+
         [Required(ErrorMessage = "Họ tên là bắt buộc")]
         [StringLength(100, MinimumLength = 2, ErrorMessage = "Họ tên phải từ 2-100 ký tự")]
         public string FullName { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "Tên đăng nhập là bắt buộc")]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Tên đăng nhập phải từ 3-50 ký tự")]
         [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Tên đăng nhập chỉ gồm chữ, số và _")]
         public string Username { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "Email là bắt buộc")]
         [EmailAddress(ErrorMessage = "Email không hợp lệ")]
         [StringLength(150, ErrorMessage = "Email không quá 150 ký tự")]
         public string Email { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "Mật khẩu là bắt buộc")]
         public string PasswordHash { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "Vai trò là bắt buộc")]
         [RegularExpression(@"^(Admin|Nhân viên|Đầu bếp)$", ErrorMessage = "Vai trò phải là Admin, Nhân viên hoặc Đầu bếp")]
         public string Role { get; set; } = string.Empty;
-        
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsActive { get; set; } = true;
     }
@@ -224,7 +224,7 @@ namespace QLNHWebApp.Models
         public string ImageUrl { get; set; } = string.Empty; // Hình ảnh bàn
         public bool IsActive { get; set; } = true; // Trạng thái hoạt động
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        
+
         // Navigation properties
         [JsonIgnore]
         public ICollection<TableBooking> TableBookings { get; set; } = new List<TableBooking>();
@@ -247,11 +247,11 @@ namespace QLNHWebApp.Models
         public string? Note { get; set; }
         public string Status { get; set; } = "Pending"; // Pending, Confirmed, Cancelled, Completed
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        
+
         // Foreign keys
         public int TableId { get; set; }
         public Table Table { get; set; } = null!;
-        
+
         // Navigation properties
         [JsonIgnore]
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

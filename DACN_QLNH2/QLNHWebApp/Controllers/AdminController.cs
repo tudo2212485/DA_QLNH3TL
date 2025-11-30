@@ -6,6 +6,7 @@ using QLNHWebApp.Models;
 namespace QLNHWebApp.Controllers
 {
     [Authorize(AuthenticationSchemes = "AdminAuth", Policy = "AdminOnly")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class AdminController : Controller
     {
         private readonly RestaurantDbContext _context;
@@ -27,15 +28,15 @@ namespace QLNHWebApp.Controllers
                 .Select(o => o.Phone) // Use phone as unique identifier
                 .Distinct()
                 .CountAsync();
-            
+
             ViewBag.TotalOrders = totalOrders;
             ViewBag.TotalRevenue = totalRevenue;
             ViewBag.TotalCustomers = totalCustomers;
             ViewBag.UserRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
             ViewBag.FullName = User.FindFirst("FullName")?.Value;
-            
+
             // === DATA FOR CHARTS ===
-            
+
             // 1. Revenue by Month (Last 6 months) - IMPROVED LOGIC
             // Tạo danh sách đầy đủ 6 tháng gần nhất (kể cả tháng có doanh thu = 0)
             var last6Months = new List<(int Year, int Month, string Label)>();
@@ -44,13 +45,13 @@ namespace QLNHWebApp.Controllers
                 var date = DateTime.Now.AddMonths(-i);
                 last6Months.Add((date.Year, date.Month, $"Tháng {date.Month}/{date.Year}"));
             }
-            
+
             // Lấy doanh thu thực tế từ database
             var sixMonthsAgo = DateTime.Now.AddMonths(-6);
             var actualRevenue = await _context.Orders
                 .Where(o => o.Status == "Đã thanh toán" && o.Date >= sixMonthsAgo)
                 .GroupBy(o => new { o.Date.Year, o.Date.Month })
-                .Select(g => new 
+                .Select(g => new
                 {
                     Month = g.Key.Month,
                     Year = g.Key.Year,
@@ -58,16 +59,16 @@ namespace QLNHWebApp.Controllers
                     OrderCount = g.Count()
                 })
                 .ToListAsync();
-            
+
             // Merge data: Tạo array đầy đủ 6 tháng, tháng nào không có dữ liệu = 0
             var revenueLabels = new List<string>();
             var revenueData = new List<decimal>();
             var orderCountData = new List<int>();
-            
+
             foreach (var month in last6Months)
             {
                 revenueLabels.Add($"\"{month.Label}\"");
-                
+
                 var data = actualRevenue.FirstOrDefault(r => r.Year == month.Year && r.Month == month.Month);
                 if (data != null)
                 {
@@ -80,24 +81,24 @@ namespace QLNHWebApp.Controllers
                     orderCountData.Add(0);
                 }
             }
-            
+
             ViewBag.RevenueLabels = string.Join(",", revenueLabels);
             ViewBag.RevenueData = string.Join(",", revenueData);
             ViewBag.OrderCountData = string.Join(",", orderCountData);
-            
+
             // 2. Orders by Status (Pie Chart)
             var ordersByStatus = await _context.Orders
                 .GroupBy(o => o.Status)
                 .Select(g => new { Status = g.Key, Count = g.Count() })
                 .ToListAsync();
-            
+
             ViewBag.StatusLabels = string.Join(",", ordersByStatus.Select(s => $"\"{s.Status}\""));
             ViewBag.StatusData = string.Join(",", ordersByStatus.Select(s => s.Count));
-            
+
             // 3. Top 5 Menu Items (Bar Chart)
             var topMenuItems = await _context.OrderItems
                 .GroupBy(oi => oi.MenuItemId)
-                .Select(g => new 
+                .Select(g => new
                 {
                     MenuItemId = g.Key,
                     TotalQuantity = g.Sum(oi => oi.Quantity),
@@ -106,28 +107,28 @@ namespace QLNHWebApp.Controllers
                 .OrderByDescending(x => x.TotalQuantity)
                 .Take(5)
                 .ToListAsync();
-            
+
             var menuItemNames = new List<string>();
             foreach (var item in topMenuItems)
             {
                 var menuItem = await _context.MenuItems.FindAsync(item.MenuItemId);
                 menuItemNames.Add(menuItem?.Name ?? "Unknown");
             }
-            
+
             ViewBag.TopMenuLabels = string.Join(",", menuItemNames.Select(name => $"\"{name}\""));
             ViewBag.TopMenuQuantities = string.Join(",", topMenuItems.Select(x => x.TotalQuantity));
             ViewBag.TopMenuRevenue = string.Join(",", topMenuItems.Select(x => x.TotalRevenue));
-            
+
             // 4. Today's stats
             var today = DateTime.Today;
             var todayOrders = await _context.Orders.Where(o => o.Date == today).CountAsync();
             var todayRevenue = await _context.Orders
                 .Where(o => o.Date == today && o.Status == "Đã thanh toán")
                 .SumAsync(o => o.TotalPrice);
-            
+
             ViewBag.TodayOrders = todayOrders;
             ViewBag.TodayRevenue = todayRevenue;
-            
+
             return View();
         }
 
@@ -191,14 +192,14 @@ namespace QLNHWebApp.Controllers
         // API: Create Employee
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateEmployee([FromForm] string fullName, [FromForm] string username, 
+        public async Task<IActionResult> CreateEmployee([FromForm] string fullName, [FromForm] string username,
             [FromForm] string email, [FromForm] string role, [FromForm] string password)
         {
             try
             {
                 // Validate inputs
                 if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(username) ||
-                    string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(role) || 
+                    string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(role) ||
                     string.IsNullOrWhiteSpace(password))
                 {
                     return Json(new { success = false, message = "Vui lòng điền đầy đủ thông tin" });
@@ -248,7 +249,7 @@ namespace QLNHWebApp.Controllers
         // API: Update Employee
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateEmployee([FromForm] int id, [FromForm] string fullName, 
+        public async Task<IActionResult> UpdateEmployee([FromForm] int id, [FromForm] string fullName,
             [FromForm] string username, [FromForm] string email, [FromForm] string role)
         {
             try

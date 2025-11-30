@@ -11,7 +11,7 @@ function setupEventListeners() {
     // Tìm kiếm món ăn
     const searchInput = document.getElementById('searchMenuItem');
     if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
+        searchInput.addEventListener('input', function (e) {
             const searchTerm = e.target.value.toLowerCase();
             filterMenuItems(searchTerm, currentCategory);
         });
@@ -19,10 +19,10 @@ function setupEventListeners() {
 
     // Filter theo category
     document.querySelectorAll('.category-filter .badge').forEach(badge => {
-        badge.addEventListener('click', function() {
+        badge.addEventListener('click', function () {
             document.querySelectorAll('.category-filter .badge').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            
+
             currentCategory = this.dataset.category;
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
             filterMenuItems(searchTerm, currentCategory);
@@ -32,14 +32,14 @@ function setupEventListeners() {
 
 function filterMenuItems(searchTerm, category) {
     const items = document.querySelectorAll('.menu-item-search');
-    
+
     items.forEach(item => {
         const name = item.dataset.name;
         const itemCategory = item.dataset.category;
-        
+
         const matchSearch = !searchTerm || name.includes(searchTerm);
         const matchCategory = category === 'all' || itemCategory === category;
-        
+
         item.style.display = (matchSearch && matchCategory) ? '' : 'none';
     });
 }
@@ -48,7 +48,7 @@ function selectMenuItem(menuItemId, menuItemName, price) {
     // Đóng modal
     const modal = bootstrap.Modal.getInstance(document.getElementById('addMenuItemModal'));
     if (modal) modal.hide();
-    
+
     Swal.fire({
         title: `<i class="fas fa-utensils"></i> ${menuItemName}`,
         html: `
@@ -92,23 +92,23 @@ function addMenuItem(menuItemId, quantity, menuItemName, price) {
             menuItemId: menuItemId,
             quantity: quantity
         }),
-        success: function(response) {
+        success: function (response) {
             if (response.success) {
                 showToast(`Đã thêm ${quantity}x ${menuItemName}`, 'success');
-                
+
                 // Cập nhật hoặc thêm món vào danh sách
                 if (response.isNew) {
                     addNewItemToList(response.item);
                 } else {
                     updateExistingItem(response.item);
                 }
-                
+
                 updateGrandTotal();
             } else {
                 showError(response.message);
             }
         },
-        error: function() {
+        error: function () {
             showError('Không thể kết nối đến server');
         }
     });
@@ -116,7 +116,7 @@ function addMenuItem(menuItemId, quantity, menuItemName, price) {
 
 function addNewItemToList(item) {
     const orderItemsList = document.getElementById('orderItemsList');
-    
+
     // Nếu đang hiển thị message rỗng, xóa đi
     const emptyMessage = orderItemsList.querySelector('.text-center.py-5');
     if (emptyMessage) {
@@ -145,7 +145,7 @@ function addNewItemToList(item) {
             </div>
         `;
     }
-    
+
     const tbody = orderItemsList.querySelector('tbody');
     const newRow = document.createElement('tr');
     newRow.className = 'order-item-row';
@@ -178,9 +178,9 @@ function addNewItemToList(item) {
             </button>
         </td>
     `;
-    
+
     tbody.appendChild(newRow);
-    
+
     // Fade in animation
     setTimeout(() => {
         newRow.style.transition = 'all 0.3s ease';
@@ -212,7 +212,7 @@ function updateQuantity(orderItemId, newQuantity) {
             orderItemId: orderItemId,
             quantity: newQuantity
         }),
-        success: function(response) {
+        success: function (response) {
             if (response.success) {
                 // Cập nhật UI
                 document.getElementById(`qty-${orderItemId}`).textContent = newQuantity;
@@ -224,7 +224,7 @@ function updateQuantity(orderItemId, newQuantity) {
                 showError(response.message);
             }
         },
-        error: function() {
+        error: function () {
             showError('Không thể cập nhật');
         }
     });
@@ -250,26 +250,26 @@ function removeItem(orderItemId) {
                     bookingId: bookingId,
                     orderItemId: orderItemId
                 }),
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
                         // Xóa dòng với animation
                         const row = document.querySelector(`tr[data-item-id="${orderItemId}"]`);
                         row.style.transition = 'all 0.3s ease';
                         row.style.opacity = '0';
                         row.style.transform = 'translateX(-20px)';
-                        
+
                         setTimeout(() => {
                             row.remove();
                             updateGrandTotal();
                             checkEmptyList();
                         }, 300);
-                        
+
                         showToast('Đã xóa món', 'success');
                     } else {
                         showError(response.message);
                     }
                 },
-                error: function() {
+                error: function () {
                     showError('Không thể xóa món');
                 }
             });
@@ -284,7 +284,7 @@ function updateGrandTotal() {
         const itemTotal = parseInt(totalText.replace(/[^\d]/g, ''));
         total += itemTotal;
     });
-    
+
     const grandTotalEl = document.getElementById('grandTotal');
     if (grandTotalEl) {
         grandTotalEl.textContent = total.toLocaleString() + '₫';
@@ -325,7 +325,7 @@ function showToast(message, type = 'success') {
         icon: type,
         title: message
     });
-    
+
     Swal.close();
 }
 

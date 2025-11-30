@@ -5,6 +5,7 @@ using QLNHWebApp.Helpers;
 
 namespace QLNHWebApp.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class BookingController : Controller
     {
         private readonly RestaurantDbContext _context;
@@ -35,15 +36,15 @@ namespace QLNHWebApp.Controllers
                 Guests = guests,
                 Note = note ?? ""
             };
-            
+
             HttpContext.Session.SetObjectAsJson("BookingInfo", bookingInfo);
-            
+
             if (action == "continue_menu")
             {
                 // Redirect to menu page to select dishes
                 return RedirectToAction("Index", "Home"); // hoặc Menu controller nếu có
             }
-            
+
             return RedirectToAction("Table");
         }
 
@@ -65,7 +66,7 @@ namespace QLNHWebApp.Controllers
             try
             {
                 // Validate input
-                if (string.IsNullOrEmpty(customerName) || string.IsNullOrEmpty(phone) || 
+                if (string.IsNullOrEmpty(customerName) || string.IsNullOrEmpty(phone) ||
                     string.IsNullOrEmpty(date) || string.IsNullOrEmpty(time))
                 {
                     TempData["ErrorMessage"] = "Vui lòng điền đầy đủ thông tin bắt buộc.";
@@ -81,7 +82,7 @@ namespace QLNHWebApp.Controllers
 
                 // Get cart items from session (optional)
                 var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
-                
+
                 // Calculate total price
                 decimal totalPrice = 0;
                 var orderItems = new List<OrderItem>();
@@ -123,7 +124,7 @@ namespace QLNHWebApp.Controllers
 
                 // Store order ID in session for payment
                 HttpContext.Session.SetInt32("CurrentOrderId", order.Id);
-                
+
                 // Store success message
                 TempData["SuccessMessage"] = $"Đặt bàn thành công! Mã đơn: #{order.Id}";
 

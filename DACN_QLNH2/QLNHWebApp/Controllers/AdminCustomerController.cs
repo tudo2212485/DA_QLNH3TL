@@ -6,6 +6,7 @@ using QLNHWebApp.Models;
 namespace QLNHWebApp.Controllers
 {
     [Authorize(AuthenticationSchemes = "AdminAuth", Policy = "AdminOnly")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class AdminCustomerController : Controller
     {
         private readonly RestaurantDbContext _context;
@@ -46,8 +47,8 @@ namespace QLNHWebApp.Controllers
             // Filter by search
             if (!string.IsNullOrEmpty(search))
             {
-                customersQuery = customersQuery.Where(c => 
-                    c.CustomerName.Contains(search) || 
+                customersQuery = customersQuery.Where(c =>
+                    c.CustomerName.Contains(search) ||
                     c.Phone.Contains(search));
                 ViewData["SearchFilter"] = search;
             }
@@ -65,7 +66,7 @@ namespace QLNHWebApp.Controllers
 
             // Calculate statistics - LOGIC CHO QUẢN LÝ NHÀ HÀNG
             var allCustomersData = ordersData; // Dùng toàn bộ data, không bị filter
-            
+
             var totalCustomers = allCustomersData.Count();
             var newCustomers = allCustomersData.Count(c => c.LastOrderDate >= DateTime.Today.AddDays(-30)); // Khách mới trong 30 ngày
             var loyalCustomers = allCustomersData.Count(c => c.TotalOrders >= 5); // Khách thân thiết: >= 5 đơn

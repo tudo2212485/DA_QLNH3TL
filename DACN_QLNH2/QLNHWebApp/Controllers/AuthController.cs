@@ -8,6 +8,7 @@ using QLNHWebApp.Services;
 
 namespace QLNHWebApp.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class AuthController : Controller
     {
         private readonly RestaurantDbContext _context;
@@ -24,7 +25,7 @@ namespace QLNHWebApp.Controllers
         {
             // Ensure seed data exists
             await _dataSeeder.SeedAsync();
-            
+
             return View();
         }
 
@@ -79,13 +80,13 @@ namespace QLNHWebApp.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync("AdminAuth");
-            
+
             // Xóa session
             HttpContext.Session.Clear();
-            
+
             // Hiển thị thông báo thành công
             TempData["SuccessMessage"] = "Đăng xuất thành công!";
-            
+
             // Redirect về trang đăng nhập
             return RedirectToAction("Login", "Auth");
         }

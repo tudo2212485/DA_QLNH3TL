@@ -5,6 +5,7 @@ using QLNHWebApp.Helpers;
 
 namespace QLNHWebApp.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class PaymentController : Controller
     {
         private readonly RestaurantDbContext _context;
@@ -16,14 +17,14 @@ namespace QLNHWebApp.Controllers
 
         public async Task<IActionResult> Index(int? orderId = null, int? bookingId = null)
         {
-            try 
+            try
             {
                 Console.WriteLine("PaymentController.Index called");
-                
+
                 // Ưu tiên bookingId từ parameter hoặc session
                 var currentBookingId = bookingId ?? HttpContext.Session.GetInt32("CurrentBookingId");
                 Console.WriteLine($"CurrentBookingId: {currentBookingId}");
-                
+
                 // Nếu có bookingId, load thông tin từ TableBooking
                 if (currentBookingId != null)
                 {
@@ -32,7 +33,7 @@ namespace QLNHWebApp.Controllers
                         .Include(tb => tb.OrderItems)
                         .ThenInclude(oi => oi.MenuItem)
                         .FirstOrDefaultAsync(tb => tb.Id == currentBookingId);
-                    
+
                     if (tableBooking != null)
                     {
                         Console.WriteLine($"Found booking: {tableBooking.Id}");
@@ -40,11 +41,11 @@ namespace QLNHWebApp.Controllers
                         return View("Index_Booking", tableBooking);
                     }
                 }
-                
+
                 // Nếu không có bookingId, thử tìm orderId
                 var currentOrderId = orderId ?? HttpContext.Session.GetInt32("CurrentOrderId");
                 Console.WriteLine($"CurrentOrderId: {currentOrderId}");
-                
+
                 if (currentOrderId == null)
                 {
                     Console.WriteLine("No order ID or booking ID found in session or parameter");
@@ -84,7 +85,7 @@ namespace QLNHWebApp.Controllers
                     .ThenInclude(oi => oi.MenuItem)
                 .Include(o => o.Table)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
-            
+
             if (order == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy đơn hàng.";
@@ -100,7 +101,7 @@ namespace QLNHWebApp.Controllers
 
             // Hiển thị thông báo thành công
             TempData["SuccessMessage"] = $"Thanh toán thành công! Mã đơn hàng: {order.Id}. Phương thức: {GetPaymentMethodName(paymentMethod)}";
-            
+
             return RedirectToAction("Success", new { orderId = order.Id });
         }
 
@@ -112,7 +113,7 @@ namespace QLNHWebApp.Controllers
                 .Include(tb => tb.OrderItems)
                     .ThenInclude(oi => oi.MenuItem)
                 .FirstOrDefaultAsync(tb => tb.Id == bookingId);
-            
+
             if (booking == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy thông tin đặt bàn.";
@@ -127,7 +128,7 @@ namespace QLNHWebApp.Controllers
 
             // Hiển thị thông báo thành công
             TempData["SuccessMessage"] = $"Đặt bàn thành công! Mã đặt bàn: #{bookingId}. Phương thức thanh toán: {GetPaymentMethodName(paymentMethod)}. Đơn đặt bàn đang chờ xác nhận từ nhà hàng.";
-            
+
             return RedirectToAction("BookingSuccess", new { bookingId = booking.Id });
         }
 
@@ -167,7 +168,7 @@ namespace QLNHWebApp.Controllers
             return method switch
             {
                 "restaurant" => "Thanh toán tại nhà hàng",
-                "ewallet" => "Ví điện tử", 
+                "ewallet" => "Ví điện tử",
                 "bank_transfer" => "Chuyển khoản ngân hàng",
                 _ => "Không xác định"
             };
