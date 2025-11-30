@@ -5,100 +5,133 @@ using QLNHWebApp.Models;
 
 namespace QLNHWebApp.Controllers
 {
-    [Authorize(AuthenticationSchemes = "AdminAuth", Policy = "AdminAndStaff")]
-    [ApiExplorerSettings(IgnoreApi = true)]
+    /// <summary>
+    /// Controller quản lý đặt bàn cho Admin/Staff
+    /// Chức năng: Xem, xác nhận, từ chối, chỉnh sửa booking
+    /// Chuyển đổi booking thành order khi xác nhận
+    /// </summary>
+    [Authorize(AuthenticationSchemes = "AdminAuth", Policy = "AdminAndStaff")] // Chỉ Admin và Staff mới truy cập được
+    [ApiExplorerSettings(IgnoreApi = true)] // Không hiển thị trong Swagger API docs
     public class AdminBookingController : Controller
     {
+        // Database context để truy vấn và cập nhật dữ liệu
         private readonly RestaurantDbContext _context;
 
+        // Constructor: Dependency Injection tự động inject DbContext
         public AdminBookingController(RestaurantDbContext context)
         {
             _context = context;
         }
 
+        /// <summary>
+        /// Action hiển thị danh sách booking (Trang chính quản lý đặt bàn)
+        /// Route: /AdminBooking/Index
+        /// Có filter: status, search (tên/SĐT), date
+        /// </summary>
         public async Task<IActionResult> Index(string? status, string? search, DateTime? date)
         {
+            // BƯỚC 1: Tạo query lấy danh sách bookings
+            // AsQueryable() cho phép thêm điều kiện WHERE động
             var bookingsQuery = _context.TableBookings
-                .Include(tb => tb.Table)
-                .Include(tb => tb.OrderItems)  // Load món ăn để hiển thị trong danh sách
-                    .ThenInclude(oi => oi.MenuItem)
-                .AsQueryable();
+                .Include(tb => tb.Table) // Load thông tin bàn
+                .Include(tb => tb.OrderItems)  // Load món ăn đã đặt
+                    .ThenInclude(oi => oi.MenuItem) // Load chi tiết món ăn
+                .AsQueryable(); // Chưa execute, vẫn ở dạng IQueryable
 
-            // Filter by status
+            // BƯỚC 2: Áp dụng các bộ lọc (nếu có)
+            // Filter theo trạng thái (Pending, Confirmed, Cancelled, ...)
             if (!string.IsNullOrEmpty(status))
             {
                 bookingsQuery = bookingsQuery.Where(tb => tb.Status == status);
-                ViewData["StatusFilter"] = status;
+                ViewData["StatusFilter"] = status; // Lưu để hiển thị lại trong View
             }
 
-            // Filter by search (customer name or phone)
+            // Filter theo tên khách hoặc số điện thoại
             if (!string.IsNullOrEmpty(search))
             {
                 bookingsQuery = bookingsQuery.Where(tb =>
-                    tb.CustomerName.Contains(search) ||
+                    tb.CustomerName.Contains(search) || // LIKE %search%
                     tb.Phone.Contains(search));
                 ViewData["SearchFilter"] = search;
             }
 
-            // Filter by date
+            // Filter theo ngày đặt
             if (date.HasValue)
             {
                 bookingsQuery = bookingsQuery.Where(tb => tb.BookingDate.Date == date.Value.Date);
                 ViewData["DateFilter"] = date.Value.ToString("yyyy-MM-dd");
             }
 
+            // BƯỚC 3: Execute query và sắp xếp
             var bookings = await bookingsQuery
-                .OrderByDescending(tb => tb.BookingDate)
-                .ThenByDescending(tb => tb.Id)
-                .ToListAsync();
+                .OrderByDescending(tb => tb.BookingDate) // Sắp xếp ngày mới nhất trước
+                .ThenByDescending(tb => tb.Id) // Nếu cùng ngày thì ID lớn hơn trước
+                .ToListAsync(); // Execute và load vào memory
 
-            // Calculate statistics
-            var totalBookings = await _context.TableBookings.CountAsync();
+            // BƯỚC 4: Tính toán thống kê (hiển thị trên dashboard)
+            var totalBookings = await _context.TableBookings.CountAsync(); // Tổng số booking
             var todayBookings = await _context.TableBookings
-                .CountAsync(tb => tb.BookingDate.Date == DateTime.Today);
+                .CountAsync(tb => tb.BookingDate.Date == DateTime.Today); // Booking hôm nay
             var pendingBookings = await _context.TableBookings
-                .CountAsync(tb => tb.Status == "Pending");
+                .CountAsync(tb => tb.Status == "Pending"); // Đang chờ xác nhận
             var confirmedBookings = await _context.TableBookings
-                .CountAsync(tb => tb.Status == "Confirmed");
+                .CountAsync(tb => tb.Status == "Confirmed"); // Đã xác nhận
 
+            // Truyền thống kê sang View qua ViewBag (dynamic property)
             ViewBag.TotalBookings = totalBookings;
             ViewBag.TodayBookings = todayBookings;
             ViewBag.PendingBookings = pendingBookings;
             ViewBag.ConfirmedBookings = confirmedBookings;
 
+            // Trả về View với danh sách bookings làm Model
             return View(bookings);
         }
 
-        // GET: Chi tiết booking
+        /// <summary>
+        /// Hiển thị chi tiết 1 booking cụ thể
+        /// Route: /AdminBooking/Details/{id}
+        /// Ví dụ: /AdminBooking/Details/5
+        /// </summary>
         public async Task<IActionResult> Details(int id)
         {
+            // Tìm booking theo ID, kèm theo related data
             var booking = await _context.TableBookings
-                .Include(tb => tb.Table)
-                .Include(tb => tb.OrderItems)  // Load món ăn đã đặt
-                    .ThenInclude(oi => oi.MenuItem)
-                .FirstOrDefaultAsync(tb => tb.Id == id);
+                .Include(tb => tb.Table) // Load thông tin bàn
+                .Include(tb => tb.OrderItems)  // Load danh sách món đã đặt
+                    .ThenInclude(oi => oi.MenuItem) // Load chi tiết món ăn
+                .FirstOrDefaultAsync(tb => tb.Id == id); // Lấy booking đầu tiên khớp ID
 
+            // Nếu không tìm thấy, trả về 404 Not Found page
             if (booking == null)
             {
                 return NotFound();
             }
 
+            // Trả về View Details với booking làm Model
             return View(booking);
         }
 
-        // POST: Cập nhật trạng thái (Xác nhận/Từ chối/Hủy)
-        [HttpPost]
+        /// <summary>
+        /// API cập nhật trạng thái booking (AJAX call)
+        /// Endpoint: POST /AdminBooking/UpdateStatus
+        /// Params: id (booking ID), status (Pending/Confirmed/Cancelled/...)
+        /// </summary>
+        [HttpPost] // Chỉ chấp nhận POST method
         public async Task<IActionResult> UpdateStatus(int id, string status)
         {
+            // Tìm booking theo ID (không cần Include vì chỉ update Status)
             var booking = await _context.TableBookings.FindAsync(id);
             if (booking == null)
             {
+                // Trả về JSON error (dùng cho AJAX)
                 return Json(new { success = false, message = "Không tìm thấy đặt bàn!" });
             }
 
+            // Cập nhật trạng thái
             booking.Status = status;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); // Lưu vào database
 
+            // Trả về JSON success
             return Json(new
             {
                 success = true,
@@ -106,19 +139,25 @@ namespace QLNHWebApp.Controllers
             });
         }
 
-        // POST: Xác nhận booking nhanh
+        /// <summary>
+        /// API xác nhận booking và tự động chuyển thành Order (QUAN TRỌNG)
+        /// Endpoint: POST /AdminBooking/Confirm
+        /// Flow: TableBooking → Order (booking biến thành đơn hàng thực tế)
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> Confirm([FromBody] ConfirmRequest request)
         {
+            // VALIDATION: Kiểm tra dữ liệu đầu vào
             if (request == null || request.Id <= 0)
             {
                 return Json(new { success = false, message = "Dữ liệu không hợp lệ!" });
             }
 
+            // BƯỚC 1: Lấy thông tin booking kèm món ăn đã đặt
             var booking = await _context.TableBookings
-                .Include(tb => tb.Table)
-                .Include(tb => tb.OrderItems)  // Load món ăn đã đặt
-                    .ThenInclude(oi => oi.MenuItem)
+                .Include(tb => tb.Table) // Thông tin bàn
+                .Include(tb => tb.OrderItems)  // Danh sách món đã đặt
+                    .ThenInclude(oi => oi.MenuItem) // Chi tiết món
                 .FirstOrDefaultAsync(tb => tb.Id == request.Id);
 
             if (booking == null)
@@ -126,59 +165,67 @@ namespace QLNHWebApp.Controllers
                 return Json(new { success = false, message = "Không tìm thấy đặt bàn!" });
             }
 
+            // Cập nhật trạng thái booking (optional, vì sẽ xóa sau)
             booking.Status = "Confirmed";
 
-            // Tính tổng tiền từ món ăn đã đặt
+            // BƯỚC 2: Tính tổng tiền từ món ăn đã đặt
+            // Σ(Giá × Số lượng) của tất cả món
             decimal totalPrice = booking.OrderItems.Sum(oi => oi.Price * oi.Quantity);
 
-            // TẠO ORDER TỰ ĐỘNG KHI XÁC NHẬN BOOKING
+            // BƯỚC 3: TẠO ORDER MỚI (chuyển đổi booking thành order thực tế)
+            // Đây là bước QUAN TRỌNG: từ "đặt trước" → "đang phục vụ"
             var order = new Order
             {
-                CustomerName = booking.CustomerName,
+                CustomerName = booking.CustomerName, // Copy thông tin khách
                 Phone = booking.Phone,
-                Date = booking.BookingDate,
-                Time = booking.BookingTime,
-                Guests = booking.Guests,
-                Note = booking.Note,
-                TableId = booking.TableId,
-                TotalPrice = totalPrice,
-                Status = "Đang phục vụ"
+                Date = booking.BookingDate, // Ngày đặt
+                Time = booking.BookingTime, // Giờ đặt
+                Guests = booking.Guests, // Số khách
+                Note = booking.Note, // Ghi chú
+                TableId = booking.TableId, // Bàn nào
+                TotalPrice = totalPrice, // Tổng tiền đã tính
+                Status = "Đang phục vụ" // Trạng thái mới: đang phục vụ
             };
 
+            // Thêm Order vào database
             _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); // Phải save để có Order.Id
 
-            // COPY MÓN ĂN TỪ TABLEBOOKING SANG ORDER
+            // BƯỚC 4: CHUYỂN MÓN ĂN TỪ BOOKING SANG ORDER
             if (booking.OrderItems != null && booking.OrderItems.Any())
             {
+                // Duyệt qua từng món trong booking
                 foreach (var bookingItem in booking.OrderItems)
                 {
+                    // Tạo OrderItem mới cho Order
                     var orderItem = new OrderItem
                     {
-                        OrderId = order.Id,
-                        MenuItemId = bookingItem.MenuItemId,
-                        Quantity = bookingItem.Quantity,
-                        Price = bookingItem.Price,
-                        TableBookingId = null  // Xóa liên kết với TableBooking
+                        OrderId = order.Id, // Link tới Order mới tạo
+                        MenuItemId = bookingItem.MenuItemId, // Món gì
+                        Quantity = bookingItem.Quantity, // Số lượng
+                        Price = bookingItem.Price, // Giá (snapshot)
+                        TableBookingId = null  // Xóa link với TableBooking (vì chuyển sang Order rồi)
                     };
 
                     _context.OrderItems.Add(orderItem);
                 }
 
-                // XÓA CÁC ORDERITEMS CŨ KHỎI TABLEBOOKING
+                // XÓA CÁC ORDERITEMS CŨ (vì đã copy sang Order rồi)
                 _context.OrderItems.RemoveRange(booking.OrderItems);
                 await _context.SaveChangesAsync();
             }
 
-            // XÓA BOOKING SAU KHI ĐÃ CHUYỂN SANG ORDER
+            // BƯỚC 5: XÓA BOOKING (vì đã chuyển thành Order rồi)
+            // Booking chỉ là bước trung gian, sau khi confirm → xóa đi
             _context.TableBookings.Remove(booking);
             await _context.SaveChangesAsync();
 
+            // Trả về JSON success với ID đơn hàng mới
             return Json(new
             {
                 success = true,
                 message = "Đã xác nhận đặt bàn và tạo đơn hàng thành công!",
-                orderId = order.Id
+                orderId = order.Id // Trả về ID để redirect hoặc xử lý tiếp
             });
         }
 
