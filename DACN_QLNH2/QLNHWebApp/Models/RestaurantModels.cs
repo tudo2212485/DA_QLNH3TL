@@ -27,6 +27,9 @@ namespace QLNHWebApp.Models
         [StringLength(500, ErrorMessage = "URL không quá 500 ký tự")]
         public string? ImageUrl { get; set; }
 
+        // Property để đánh dấu món còn phục vụ hay không
+        public bool IsAvailable { get; set; } = true;
+
         [JsonIgnore]
         public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
         [JsonIgnore]
