@@ -18,11 +18,12 @@ namespace QLNHWebApp.Controllers.Api
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MenuItem>>> GetMenuItems(string? category = null, string? search = null)
         {
-            var items = _context.MenuItems.AsQueryable();
-            
+            // CHỈ hiển thị món có IsAvailable = true cho khách hàng
+            var items = _context.MenuItems.Where(m => m.IsAvailable).AsQueryable();
+
             if (!string.IsNullOrEmpty(category))
                 items = items.Where(m => m.Category == category);
-            
+
             if (!string.IsNullOrEmpty(search))
                 items = items.Where(m => m.Name.Contains(search));
 
@@ -32,9 +33,10 @@ namespace QLNHWebApp.Controllers.Api
         [HttpGet("{id}")]
         public async Task<ActionResult<MenuItem>> GetMenuItem(int id)
         {
+            // CHỈ cho phép xem chi tiết món có IsAvailable = true
             var item = await _context.MenuItems
                 .Include(m => m.Ratings)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && m.IsAvailable);
 
             if (item == null)
                 return NotFound();
@@ -45,11 +47,13 @@ namespace QLNHWebApp.Controllers.Api
         [HttpGet("categories")]
         public async Task<ActionResult<IEnumerable<string>>> GetCategories()
         {
+            // CHỈ lấy categories từ món có IsAvailable = true
             var categories = await _context.MenuItems
+                .Where(m => m.IsAvailable)
                 .Select(m => m.Category)
                 .Distinct()
                 .ToListAsync();
-            
+
             return categories;
         }
 

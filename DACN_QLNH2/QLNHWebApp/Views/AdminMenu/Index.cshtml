@@ -80,7 +80,7 @@
         @foreach (var item in Model)
         {
             <div class="col-lg-4 col-md-6 mb-4">
-                <div class="card h-100 shadow-sm">
+                <div class="card h-100 shadow-sm @(!item.IsAvailable ? "menu-item-hidden" : "")" data-menu-id="@item.Id">
                     <div class="position-relative">
                         @if (!string.IsNullOrEmpty(item.ImageUrl))
                         {
@@ -100,28 +100,47 @@
                         <span class="badge bg-primary position-absolute top-0 start-0 m-2">@item.Category</span>
                         <span class="badge bg-success position-absolute top-0 end-0 m-2">@item.Price.ToString("C0", new
                                                 System.Globalization.CultureInfo("vi-VN"))</span>
-            </div>
-            <div class="card-body d-flex flex-column">
-                <h5 class="card-title">@item.Name</h5>
-                <p class="card-text flex-grow-1">@item.Description</p>
-                <div class="btn-group mt-auto" role="group">
-                    <a asp-controller="AdminMenu" asp-action="Details" asp-route-id="@item.Id"
-                        class="btn btn-outline-info btn-sm">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                    <a asp-controller="AdminMenu" asp-action="Edit" asp-route-id="@item.Id"
-                        class="btn btn-outline-warning btn-sm">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <a asp-controller="AdminMenu" asp-action="Delete" asp-route-id="@item.Id"
-                        class="btn btn-outline-danger btn-sm"
-                        onclick="return confirm('Bạn có chắc chắn muốn xóa món ăn &quot;@item.Name&quot;? Hành động này không thể hoàn tác!')">
-                        <i class="fas fa-trash"></i>
-                    </a>
+                @if (!item.IsAvailable)
+                        {
+                            <div class="position-absolute top-50 start-50 translate-middle">
+                                <span class="badge bg-danger fs-5 px-3 py-2">
+                                    <i class="fas fa-eye-slash me-1"></i>
+                                    ĐANG ẨN
+                                </span>
+                            </div>
+                        }
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">@item.Name</h5>
+                            <div class="form-check form-switch ms-2">
+                                <input class="form-check-input toggle-availability" type="checkbox" id="toggle-@item.Id"
+                                    data-menu-id="@item.Id" @(item.IsAvailable ? "checked" : "")
+                                    title="@(item.IsAvailable ? "Click để ẩn món này" : "Click để hiện món này")">
+                                <label class="form-check-label small text-muted" for="toggle-@item.Id">
+                                    @(item.IsAvailable ? "Đang hiện" : "Đã ẩn")
+                                </label>
+                            </div>
+                        </div>
+                        <p class="card-text flex-grow-1">@item.Description</p>
+                        <div class="btn-group mt-auto" role="group">
+                            <a asp-controller="AdminMenu" asp-action="Details" asp-route-id="@item.Id"
+                                class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a asp-controller="AdminMenu" asp-action="Edit" asp-route-id="@item.Id"
+                                class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a asp-controller="AdminMenu" asp-action="Delete" asp-route-id="@item.Id"
+                                class="btn btn-outline-danger btn-sm"
+                                onclick="return confirm('Bạn có chắc chắn muốn xóa món ăn &quot;@item.Name&quot;? Hành động này không thể hoàn tác!')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
         }
     }
     else
@@ -210,6 +229,56 @@
     </div>
 </div>
 
+<style>
+    /* Style cho món bị ẩn */
+    .menu-item-hidden {
+        opacity: 0.5;
+        border: 2px dashed #dc3545 !important;
+    }
+
+    .menu-item-hidden img,
+    .menu-item-hidden .card-img-top {
+        filter: grayscale(70%);
+    }
+
+    /* Animation cho toggle */
+    .form-check-input.toggle-availability {
+        cursor: pointer;
+        width: 3em;
+        height: 1.5em;
+    }
+
+    .form-check-input.toggle-availability:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    /* Toast animations */
+    @@keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+</style>
+
 <script>
     // Auto-submit search on Enter key
     document.getElementById('searchString').addEventListener('keypress', function (e) {
@@ -218,4 +287,106 @@
             document.querySelector('form').submit();
         }
     });
+
+    // Toggle availability handler
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleSwitches = document.querySelectorAll('.toggle-availability');
+
+        toggleSwitches.forEach(toggle => {
+            toggle.addEventListener('change', async function () {
+                const menuId = this.getAttribute('data-menu-id');
+                const isChecked = this.checked;
+                const card = document.querySelector(`[data-menu-id="${menuId}"]`);
+                const label = this.nextElementSibling;
+
+                // Disable toggle during request
+                this.disabled = true;
+
+                try {
+                    const response = await fetch(`/AdminMenu/ToggleAvailability/${menuId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Update UI
+                        if (result.isAvailable) {
+                            card.classList.remove('menu-item-hidden');
+                            label.textContent = 'Đang hiện';
+                            this.title = 'Click để ẩn món này';
+
+                            // Remove "ĐANG ẨN" badge if exists
+                            const badge = card.querySelector('.translate-middle');
+                            if (badge) badge.remove();
+                        } else {
+                            card.classList.add('menu-item-hidden');
+                            label.textContent = 'Đã ẩn';
+                            this.title = 'Click để hiện món này';
+
+                            // Add "ĐANG ẨN" badge
+                            const imgContainer = card.querySelector('.position-relative');
+                            const badge = document.createElement('div');
+                            badge.className = 'position-absolute top-50 start-50 translate-middle';
+                            badge.innerHTML = '<span class="badge bg-danger fs-5 px-3 py-2"><i class="fas fa-eye-slash me-1"></i>ĐANG ẨN</span>';
+                            imgContainer.appendChild(badge);
+                        }
+
+                        // Show success toast
+                        showToast(result.message, 'success');
+                    } else {
+                        // Revert toggle on error
+                        this.checked = !isChecked;
+                        showToast('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error toggling availability:', error);
+                    this.checked = !isChecked;
+                    showToast('Không thể kết nối đến server!', 'error');
+                } finally {
+                    // Re-enable toggle
+                    this.disabled = false;
+                }
+            });
+        });
+    });
+
+    // Simple toast notification
+    function showToast(message, type = 'success') {
+        const bgColor = type === 'success' ? '#28a745' : '#dc3545';
+        const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${bgColor};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        `;
+        toast.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
 </script>

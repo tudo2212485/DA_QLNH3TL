@@ -301,6 +301,43 @@ namespace QLNHWebApp.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // API để toggle trạng thái IsAvailable
+        [HttpPost]
+        [Authorize(Policy = "AdminAndStaff")]
+        public async Task<IActionResult> ToggleAvailability(int id)
+        {
+            try
+            {
+                Console.WriteLine($"[ToggleAvailability] Received request for menu item ID: {id}");
+
+                var menuItem = await _context.MenuItems.FindAsync(id);
+                if (menuItem == null)
+                {
+                    Console.WriteLine($"[ToggleAvailability] Menu item not found: {id}");
+                    return NotFound(new { success = false, message = "Không tìm thấy món ăn" });
+                }
+
+                var oldStatus = menuItem.IsAvailable;
+                menuItem.IsAvailable = !menuItem.IsAvailable;
+                await _context.SaveChangesAsync();
+
+                Console.WriteLine($"[ToggleAvailability] Toggled menu item {id} from {oldStatus} to {menuItem.IsAvailable}");
+
+                return Ok(new
+                {
+                    success = true,
+                    isAvailable = menuItem.IsAvailable,
+                    message = menuItem.IsAvailable ? "Món ăn đã được hiển thị" : "Món ăn đã được ẩn"
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ToggleAvailability] Error: {ex.Message}");
+                Console.WriteLine($"[ToggleAvailability] StackTrace: {ex.StackTrace}");
+                return StatusCode(500, new { success = false, message = $"Lỗi server: {ex.Message}" });
+            }
+        }
+
         private bool MenuItemExists(int id)
         {
             return _context.MenuItems.Any(e => e.Id == id);

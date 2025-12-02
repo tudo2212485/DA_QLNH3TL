@@ -130,7 +130,7 @@ namespace QLNHWebApp.Controllers.Api
                 }
 
                 var menuText = $"🍽️ **Menu Nhà Hàng 3TL** ({menuItems.Count} món):\n\n";
-                
+
                 var groupedMenu = menuItems.GroupBy(m => m.Category ?? "Khác");
                 foreach (var group in groupedMenu)
                 {
