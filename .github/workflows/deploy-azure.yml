@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: 3TangLau
+  AZURE_WEBAPP_NAME: 3TangLau-eqchdpf0fghgxhnfa
   DOTNET_VERSION: "9.0.x"
   PROJECT_PATH: "DACN_QLNH2/QLNHWebApp"
   PUBLISH_DIR: "publish"
