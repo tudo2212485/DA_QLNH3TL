@@ -76,3 +76,7 @@ Desktop.ini
 # Visual Studio Code
 .vscode/
 
+
+# Allow specific database file for project demonstration
+!QLNHDB.db
+!**/QLNHDB.db
