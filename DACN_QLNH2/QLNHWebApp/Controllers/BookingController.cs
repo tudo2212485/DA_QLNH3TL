@@ -32,10 +32,10 @@ namespace QLNHWebApp.Controllers
             // Lấy thông tin booking từ Session (nếu user đã nhập trước đó)
             // Session giúp giữ dữ liệu giữa các request (server-side storage)
             var bookingInfo = HttpContext.Session.GetObjectFromJson<BookingInfo>("BookingInfo");
-            
+
             // Truyền sang View qua ViewBag để hiển thị lại form
             ViewBag.BookingInfo = bookingInfo;
-            
+
             return View(); // Render view Booking/Table.cshtml
         }
 
@@ -128,7 +128,7 @@ namespace QLNHWebApp.Controllers
                     {
                         // Cộng dồn tổng tiền
                         totalPrice += menuItem.Price * cartItem.Quantity;
-                        
+
                         // Tạo OrderItem (chi tiết món trong đơn)
                         orderItems.Add(new OrderItem
                         {
@@ -179,7 +179,7 @@ namespace QLNHWebApp.Controllers
                 // Xử lý lỗi: Log và hiển thị thông báo
                 Console.WriteLine($"❌ Booking error: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                
+
                 TempData["ErrorMessage"] = $"Có lỗi xảy ra khi đặt bàn: {ex.Message}";
                 return View(bookingInfo); // Trả lại form với thông báo lỗi
             }
@@ -187,7 +187,7 @@ namespace QLNHWebApp.Controllers
     }
 
     #region Helper Classes
-    
+
     /// <summary>
     /// Class đại diện cho 1 món trong giỏ hàng (lưu trong Session)
     /// Chỉ cần MenuItemId và Quantity, chi tiết món sẽ query từ DB
@@ -211,6 +211,6 @@ namespace QLNHWebApp.Controllers
         public int Guests { get; set; } = 1; // Số khách (mặc định 1)
         public string Note { get; set; } = ""; // Ghi chú
     }
-    
+
     #endregion
 }

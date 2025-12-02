@@ -1,4 +1,4 @@
- using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QLNHWebApp.Models;
 using QLNHWebApp.Helpers;
@@ -106,7 +106,7 @@ namespace QLNHWebApp.Controllers.Api
                 .ToListAsync();
 
             // Tính tổng tiền = Σ(Giá món × Số lượng)
-            decimal totalPrice = request.Items.Sum(item => 
+            decimal totalPrice = request.Items.Sum(item =>
             {
                 var menuItem = menuItems.FirstOrDefault(m => m.Id == item.MenuItemId);
                 return menuItem?.Price * item.Quantity ?? 0; // ?? 0: nếu null thì trả về 0
@@ -196,7 +196,7 @@ namespace QLNHWebApp.Controllers.Api
     }
 
     #region DTO Classes (Data Transfer Objects)
-    
+
     /// <summary>
     /// DTO cho request đặt bàn đơn giản
     /// Chứa thông tin khách hàng cơ bản
@@ -237,7 +237,7 @@ namespace QLNHWebApp.Controllers.Api
         public int MenuItemId { get; set; } // ID món ăn
         public int Quantity { get; set; } // Số lượng
     }
-    
+
     #endregion
 }
 
