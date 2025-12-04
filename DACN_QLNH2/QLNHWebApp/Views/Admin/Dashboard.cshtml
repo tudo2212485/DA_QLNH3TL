@@ -1,3 +1,4 @@
+@model QLNHWebApp.Models.DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard - Quản trị hệ thống";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
@@ -11,7 +12,7 @@
                 <div class="d-flex align-items-center justify-content-between flex-wrap">
                     <div class="welcome-content">
                         <h2 class="welcome-title mb-2">
-                            <span class="wave">👋</span> Chào mừng, <strong>@ViewBag.FullName!</strong>
+                            <span class="wave">👋</span> Chào mừng, <strong>@Model.FullName!</strong>
                         </h2>
                         <p class="welcome-subtitle mb-0">
                             <i class="bx bx-calendar me-2"></i>@DateTime.Now.ToString("dddd, dd MMMM yyyy", new
@@ -29,17 +30,25 @@
 
     <!-- Statistics Cards - Thiết kế mới hiện đại -->
     <div class="row g-4 mb-4">
-        <!-- Card 1: Tổng đơn hàng -->
+        <!-- Card 1: Đơn hàng tháng này (FIX: đổi từ "Tổng đơn hàng") -->
         <div class="col-xl-3 col-md-6">
             <div class="stat-card stat-card-primary">
                 <div class="stat-icon">
                     <i class="bx bx-receipt"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-label">Tổng đơn hàng</div>
-                    <div class="stat-value counter-value" data-target="@ViewBag.TotalOrders">0</div>
-                    <div class="stat-trend trend-up">
-                        <i class="bx bx-trending-up"></i> <span>+12%</span> so với tháng trước
+                    <div class="stat-label">Đơn hàng tháng này</div>
+                    <div class="stat-value counter-value" data-target="@Model.OrdersThisMonth">0</div>
+                    @{
+                        var ordersGrowth = Model.OrdersGrowthRate;
+                        var isOrdersGrowthPositive = ordersGrowth >= 0;
+                        var ordersTrendClass = isOrdersGrowthPositive ? "trend-up" : "trend-down";
+                        var ordersIcon = isOrdersGrowthPositive ? "bx-trending-up" : "bx-trending-down";
+                        var ordersSign = isOrdersGrowthPositive ? "+" : "";
+                    }
+                    <div class="stat-trend @ordersTrendClass">
+                        <i class="bx @ordersIcon"></i> <span>@ordersSign@ordersGrowth.ToString("0.0")%</span> so với
+                        tháng trước
                     </div>
                 </div>
             </div>
@@ -53,7 +62,7 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-label">Tổng doanh thu</div>
-                    <div class="stat-value">@ViewBag.TotalRevenue?.ToString("C0", new
+                    <div class="stat-value">@Model.TotalRevenue.ToString("C0", new
                                                 System.Globalization.CultureInfo("vi-VN"))</div>
                     <div class="stat-trend trend-up">
                         <i class="bx bx-trending-up"></i> <span>+8%</span> so với tháng trước
@@ -62,17 +71,25 @@
             </div>
         </div>
 
-        <!-- Card 3: Khách hàng -->
+        <!-- Card 3: Doanh thu tháng này (MỚI - THAY THẾ "Tổng khách hàng") -->
         <div class="col-xl-3 col-md-6">
             <div class="stat-card stat-card-info">
                 <div class="stat-icon">
-                    <i class="bx bx-group"></i>
+                    <i class="bx bx-trending-up"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-label">Tổng khách hàng</div>
-                    <div class="stat-value counter-value" data-target="@ViewBag.TotalCustomers">0</div>
-                    <div class="stat-trend trend-up">
-                        <i class="bx bx-trending-up"></i> <span>+15%</span> so với tháng trước
+                    <div class="stat-label">Doanh thu tháng này</div>
+                    <div class="stat-value">@Model.CurrentMonthRevenue.ToString("C0", new
+                                                System.Globalization.CultureInfo("vi-VN"))</div>
+                    @{
+                        var growthRate = Model.MonthlyGrowthRate;
+                        var isPositive = growthRate >= 0;
+                        var trendClass = isPositive ? "trend-up" : "trend-down";
+                        var icon = isPositive ? "bx-trending-up" : "bx-trending-down";
+                        var sign = isPositive ? "+" : "";
+                    }
+                    <div class="stat-trend @trendClass">
+                        <i class="bx @icon"></i> <span>@sign@growthRate.ToString("0.0")%</span> so với tháng trước
                     </div>
                 </div>
             </div>
@@ -86,11 +103,11 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-label">Doanh thu hôm nay</div>
-                    <div class="stat-value">@ViewBag.TodayRevenue?.ToString("C0", new
+                    <div class="stat-value">@Model.TodayRevenue.ToString("C0", new
                                                 System.Globalization.CultureInfo("vi-VN"))</div>
                     <div class="stat-trend">
                         <i class="bx bx-receipt"></i> <span class="counter-value"
-                            data-target="@ViewBag.TodayOrders">0</span> đơn hôm nay
+                            data-target="@Model.TodayOrders">0</span> đơn hôm nay
                     </div>
                 </div>
             </div>
@@ -107,7 +124,7 @@
                         <h5 class="chart-title">
                             <i class="bx bx-line-chart"></i> Doanh thu theo tháng
                         </h5>
-                        <p class="chart-subtitle">6 tháng gần nhất</p>
+                        <p class="chart-subtitle">12 tháng gần nhất (chỉ tính đơn đã thanh toán)</p>
                     </div>
                     <div class="chart-actions">
                         <button class="btn btn-sm btn-light"><i class="bx bx-download"></i></button>
@@ -251,7 +268,7 @@
             updateCounter();
         });
 
-        // === 1. REVENUE CHART (Line) - IMPROVED VERSION ===
+        // === 1. REVENUE CHART (Line) - FIXED VERSION (12 tháng, data đầy đủ) ===
         const revenueCtx = document.getElementById('revenueChart').getContext('2d');
 
         // Gradient đẹp hơn
@@ -260,8 +277,9 @@
         revenueGradient.addColorStop(0.5, 'rgba(118, 75, 162, 0.15)');
         revenueGradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
 
-        const revenueLabels = [@Html.Raw(ViewBag.RevenueLabels ?? "\"Chưa có dữ liệu\"")];
-        const revenueData = [@Html.Raw(ViewBag.RevenueData ?? "0")];
+        // Data từ Model (đảm bảo đủ 12 phần tử, tháng nào không có = 0)
+        const revenueLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueLabels));
+        const revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueData));
 
         new Chart(revenueCtx, {
             type: 'line',
@@ -357,8 +375,8 @@
 
         // === 2. STATUS PIE CHART - IMPROVED VERSION ===
         const statusCtx = document.getElementById('statusChart').getContext('2d');
-        const statusLabels = [@Html.Raw(ViewBag.StatusLabels ?? "\"Chưa có dữ liệu\"")];
-        const statusData = [@Html.Raw(ViewBag.StatusData ?? "0")];
+        const statusLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusLabels));
+        const statusData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusData));
 
         // Tính tổng để hiển thị phần trăm
         const statusTotal = statusData.reduce((a, b) => a + b, 0);
@@ -427,9 +445,9 @@
 
         // === 3. TOP MENU BAR CHART - IMPROVED VERSION ===
         const topMenuCtx = document.getElementById('topMenuChart').getContext('2d');
-        const topMenuLabels = [@Html.Raw(ViewBag.TopMenuLabels ?? "\"Chưa có dữ liệu\"")];
-        const topMenuQuantities = [@Html.Raw(ViewBag.TopMenuQuantities ?? "0")];
-        const topMenuRevenue = [@Html.Raw(ViewBag.TopMenuRevenue ?? "0")];
+        const topMenuLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopMenuLabels));
+        const topMenuQuantities = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopMenuQuantities));
+        const topMenuRevenue = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopMenuRevenue));
 
         // Tạo gradient cho từng bar
         const barColors = topMenuLabels.map((_, index) => {
@@ -705,6 +723,19 @@
         }
 
         .trend-up span {
+            font-weight: 600;
+        }
+
+        /* Trend Down - Khi doanh thu giảm */
+        .trend-down {
+            color: #ef4444 !important;
+        }
+
+        .trend-down i {
+            color: #ef4444;
+        }
+
+        .trend-down span {
             font-weight: 600;
         }
 

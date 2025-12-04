@@ -1,11 +1,14 @@
 @model QLNHWebApp.Models.TableBooking
 @{
     ViewData["Title"] = "Thanh toán đặt bàn";
+    decimal depositFee = 100000; // Phí cọc giữ bàn bắt buộc
     decimal totalAmount = 0;
     if (Model.OrderItems != null)
     {
         totalAmount = Model.OrderItems.Sum(oi => oi.Price * oi.Quantity);
     }
+    decimal payNow = depositFee; // Thanh toán ngay = phí cọc
+    decimal payLater = totalAmount; // Thanh toán tại quầy = tổng món
 }
 
 <style>
@@ -440,21 +443,67 @@
                             </div>
                         }
 
+                        <!-- Bảng tính chi tiết -->
+                        <div class="info-section">
+                            <h5><i class="fas fa-calculator"></i>Chi tiết thanh toán</h5>
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td><i class="fas fa-hand-holding-usd text-warning me-2"></i><strong>Phí giữ bàn (Cọc bắt buộc)</strong></td>
+                                        <td class="text-end"><strong class="text-warning">@depositFee.ToString("N0") đ</strong></td>
+                                    </tr>
+                                    @if (totalAmount > 0)
+                                    {
+                                        <tr>
+                                            <td><i class="fas fa-utensils text-info me-2"></i>Tổng tiền món ăn đã chọn</td>
+                                            <td class="text-end">@totalAmount.ToString("N0") đ</td>
+                                        </tr>
+                                    }
+                                    <tr class="border-top">
+                                        <td><i class="fas fa-credit-card text-success me-2"></i><strong>Số tiền cần thanh toán ngay</strong></td>
+                                        <td class="text-end"><h5 class="text-success mb-0">@payNow.ToString("N0") đ</h5></td>
+                                    </tr>
+                                    @if (payLater > 0)
+                                    {
+                                        <tr>
+                                            <td><i class="fas fa-cash-register text-secondary me-2"></i>Số tiền thanh toán tại quầy (khi đến nhà hàng)</td>
+                                            <td class="text-end"><span class="text-secondary">@payLater.ToString("N0") đ</span></td>
+                                        </tr>
+                                    }
+                                    <tr class="border-top">
+                                        <td><i class="fas fa-receipt text-primary me-2"></i><strong>Tổng hóa đơn dự kiến</strong></td>
+                                        <td class="text-end"><h4 class="text-primary mb-0">@((depositFee + totalAmount).ToString("N0")) đ</h4></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Lưu ý:</strong> Phí cọc 100,000đ sẽ được trừ vào tổng hóa đơn khi quý khách đến dùng bữa.
+                            </div>
+                        </div>
+
                         <!-- Phương thức thanh toán -->
                         <div class="info-section">
                             <h5><i class="fas fa-wallet"></i>Chọn phương thức thanh toán</h5>
-                            <form method="post" action="@Url.Action("ProcessBookingPayment", "Payment")">
+                            <form method="post" action="@Url.Action("ProcessBookingPayment", "Payment")" id="paymentForm">
                                 <input type="hidden" name="bookingId" value="@Model.Id" />
 
                                 <div class="payment-methods">
                                     <div class="payment-option-card">
-                                        <input type="radio" name="paymentMethod" id="payRestaurant" value="restaurant"
+                                        <input type="radio" name="paymentMethod" id="payRestaurant" value="cod_deposit"
                                             checked>
                                         <label class="payment-card" for="payRestaurant">
-                                            <i class="fas fa-store text-primary"></i>
-                                            <h6>Thanh toán tại nhà hàng</h6>
-                                            <small>Thanh toán khi đến nhà hàng</small>
+                                            <i class="fas fa-hand-holding-usd text-warning"></i>
+                                            <h6>Đặt cọc giữ bàn (COD)</h6>
+                                            <small>Thanh toán cọc 100k ngay, số còn lại trả tại quầy</small>
                                         </label>
+                                    </div>
+
+                                    <!-- Cảnh báo vàng khi chọn COD -->
+                                    <div class="alert alert-warning mt-3" id="codWarning" style="display: block;">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Lưu ý quan trọng:</strong> Bạn cần thanh toán cọc <strong>100,000đ</strong> ngay bây giờ để hoàn tất việc giữ bàn. 
+                                        Số tiền này sẽ được trừ vào hóa đơn khi bạn đến dùng bữa.
                                     </div>
 
                                     <div class="payment-option-card">
@@ -480,197 +529,68 @@
                                     <a href="@Url.Action("Index", "Home")" class="btn btn-outline-custom">
                                         <i class="fas fa-arrow-left me-2"></i>Quay về trang chủ
                                     </a>
-                                    <button type="submit" class="btn btn-primary-custom">
-                                        <i class="fas fa-check-circle me-2"></i>Xác nhận thanh toán
+                                    <button type="submit" class="btn btn-primary-custom" id="submitBtn">
+                                        <i class="fas fa-check-circle me-2"></i>Thanh toán cọc 100,000đ
                                     </button>
                                 </div>
                             </form>
                         </div>
+
+                        <script>
+                        // JavaScript xử lý hiển thị cảnh báo và đổi text button
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const codRadio = document.getElementById('payRestaurant');
+                            const ewalletRadio = document.getElementById('payEWallet');
+                            const bankRadio = document.getElementById('payBank');
+                            const codWarning = document.getElementById('codWarning');
+                            const submitBtn = document.getElementById('submitBtn');
+                            const paymentForm = document.getElementById('paymentForm');
+
+                            function updateUI() {
+                                const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                                
+                                if (selectedMethod === 'cod_deposit') {
+                                    codWarning.style.display = 'block';
+                                    submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Thanh toán cọc 100,000đ';
+                                } else if (selectedMethod === 'ewallet') {
+                                    codWarning.style.display = 'none';
+                                    submitBtn.innerHTML = '<i class="fas fa-mobile-alt me-2"></i>Thanh toán @((depositFee + totalAmount).ToString("N0"))đ qua Ví điện tử';
+                                } else if (selectedMethod === 'bank_transfer') {
+                                    codWarning.style.display = 'none';
+                                    submitBtn.innerHTML = '<i class="fas fa-university me-2"></i>Thanh toán @((depositFee + totalAmount).ToString("N0"))đ qua Chuyển khoản';
+                                }
+                            }
+
+                            // Gắn sự kiện change cho các radio button
+                            codRadio.addEventListener('change', updateUI);
+                            ewalletRadio.addEventListener('change', updateUI);
+                            bankRadio.addEventListener('change', updateUI);
+
+                            // Validate form trước khi submit
+                            paymentForm.addEventListener('submit', function(e) {
+                                const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                                
+                                // Hiện cảnh báo xác nhận
+                                let confirmMsg = '';
+                                if (selectedMethod === 'cod_deposit') {
+                                    confirmMsg = 'Bạn xác nhận thanh toán cọc 100,000đ để giữ bàn?';
+                                } else {
+                                    confirmMsg = 'Bạn xác nhận thanh toán @((depositFee + totalAmount).ToString("N0"))đ?';
+                                }
+                                
+                                if (!confirm(confirmMsg)) {
+                                    e.preventDefault();
+                                    return false;
+                                }
+                            });
+
+                            // Khởi tạo UI ban đầu
+                            updateUI();
+                        });
+                        </script>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-<!-- Thông tin đặt bàn -->
-<div class="mb-4">
-    <h5 class="border-bottom pb-2 mb-3">
-        <i class="fas fa-info-circle text-primary me-2"></i>Thông tin đặt bàn
-    </h5>
-    <div class="row">
-        <div class="col-md-6">
-            <p><strong>Mã đặt bàn:</strong> <span class="badge bg-primary">#@Model.Id</span></p>
-            <p><strong>Khách hàng:</strong> @Model.CustomerName</p>
-            <p><strong>Số điện thoại:</strong> @Model.Phone</p>
-        </div>
-        <div class="col-md-6">
-            <p><strong>Bàn:</strong> @Model.Table?.Name (@Model.Table?.Floor)</p>
-            <p><strong>Ngày đặt:</strong> @Model.BookingDate.ToString("dd/MM/yyyy")</p>
-            <p><strong>Giờ đặt:</strong> @Model.BookingTime</p>
-            <p><strong>Số khách:</strong> @Model.Guests người</p>
-        </div>
-    </div>
-    @if (!string.IsNullOrEmpty(Model.Note))
-    {
-        <p><strong>Ghi chú:</strong> <i class="text-muted">@Model.Note</i></p>
-    }
-</div>
-
-<!-- Danh sách món ăn -->
-@if (Model.OrderItems != null && Model.OrderItems.Any())
-{
-    <div class="mb-4">
-        <h5 class="border-bottom pb-2 mb-3">
-            <i class="fas fa-utensils text-success me-2"></i>Danh sách món ăn đã đặt
-        </h5>
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>STT</th>
-                        <th>Tên món</th>
-                        <th class="text-end">Đơn giá</th>
-                        <th class="text-center">Số lượng</th>
-                        <th class="text-end">Thành tiền</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @{
-                        int index = 1;
-                        foreach (var item in Model.OrderItems)
-                        {
-                            <tr>
-                                <td>@index</td>
-                                <td>@item.MenuItem?.Name</td>
-                                <td class="text-end">@item.Price.ToString("N0") đ</td>
-                                <td class="text-center">@item.Quantity</td>
-                                <td class="text-end">@((item.Price * item.Quantity).ToString("N0")) đ</td>
-                            </tr>
-                            index++;
-                        }
-                    }
-                </tbody>
-                <tfoot>
-                    <tr class="table-primary">
-                        <th colspan="4" class="text-end">Tổng cộng:</th>
-                        <th class="text-end">@totalAmount.ToString("N0") đ</th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>
-}
-else
-{
-    <div class="alert alert-info">
-        <i class="fas fa-info-circle me-2"></i>
-        Chưa có món ăn nào được đặt. Bạn có thể gọi thêm món khi đến nhà hàng.
-    </div>
-}
-
-<!-- Phương thức thanh toán -->
-<div class="mb-4">
-    <h5 class="border-bottom pb-2 mb-3">
-        <i class="fas fa-credit-card text-warning me-2"></i>Chọn phương thức thanh toán
-    </h5>
-    <form method="post" action="@Url.Action("ProcessBookingPayment", "Payment")">
-        <input type="hidden" name="bookingId" value="@Model.Id" />
-
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="form-check payment-option">
-                    <input class="form-check-input" type="radio" name="paymentMethod" id="payRestaurant"
-                        value="restaurant" checked>
-                    <label class="form-check-label w-100" for="payRestaurant">
-                        <div class="payment-card p-3 border rounded">
-                            <i class="fas fa-store fa-2x text-primary mb-2"></i>
-                            <h6>Thanh toán tại nhà hàng</h6>
-                            <small class="text-muted">Thanh toán khi đến nhà hàng</small>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="form-check payment-option">
-                    <input class="form-check-input" type="radio" name="paymentMethod" id="payEWallet" value="ewallet">
-                    <label class="form-check-label w-100" for="payEWallet">
-                        <div class="payment-card p-3 border rounded">
-                            <i class="fas fa-wallet fa-2x text-success mb-2"></i>
-                            <h6>Ví điện tử</h6>
-                            <small class="text-muted">MoMo, ZaloPay, VNPay</small>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="form-check payment-option">
-                    <input class="form-check-input" type="radio" name="paymentMethod" id="payBank"
-                        value="bank_transfer">
-                    <label class="form-check-label w-100" for="payBank">
-                        <div class="payment-card p-3 border rounded">
-                            <i class="fas fa-university fa-2x text-info mb-2"></i>
-                            <h6>Chuyển khoản</h6>
-                            <small class="text-muted">Chuyển khoản ngân hàng</small>
-                        </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-between mt-4">
-            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary btn-lg">
-                <i class="fas fa-arrow-left me-2"></i>Quay về trang chủ
-            </a>
-            <button type="submit" class="btn btn-primary btn-lg">
-                <i class="fas fa-check me-2"></i>Xác nhận thanh toán
-            </button>
-        </div>
-    </form>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-<style>
-    .payment-option .form-check-input {
-        display: none;
-    }
-
-    .payment-card {
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: white;
-    }
-
-    .payment-card:hover {
-        background: #f8f9fa;
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .form-check-input:checked+label .payment-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-color: #667eea !important;
-    }
-
-    .form-check-input:checked+label .payment-card i,
-    .form-check-input:checked+label .payment-card h6,
-    .form-check-input:checked+label .payment-card small {
-        color: white !important;
-    }
-</style>

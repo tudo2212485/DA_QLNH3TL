@@ -149,11 +149,11 @@ namespace QLNHWebApp.Controllers
         /// <summary>
         /// Xử lý thanh toán cho TableBooking (đặt bàn trước) - POST
         /// Route: POST /Payment/ProcessBookingPayment
-        /// Lưu ý: KHÔNG thay đổi status Booking, giữ "Pending" để admin xác nhận sau
+        /// LOGIC MỚI: BẮT BUỘC thanh toán cọc 100,000đ dù chọn phương thức nào
         /// </summary>
         /// <param name="bookingId">ID đặt bàn</param>
-        /// <param name="paymentMethod">Phương thức thanh toán</param>
-        /// <returns>Redirect đến trang BookingSuccess</returns>
+        /// <param name="paymentMethod">Phương thức thanh toán (cod_deposit/ewallet/bank_transfer)</param>
+        /// <returns>Redirect đến trang thanh toán online hoặc BookingSuccess</returns>
         [HttpPost]
         public async Task<IActionResult> ProcessBookingPayment(int bookingId, string paymentMethod)
         {
@@ -170,16 +170,60 @@ namespace QLNHWebApp.Controllers
                 return RedirectToAction("Index");
             }
 
-            // BƯỚC 2: GIỮ NGUYÊN trạng thái "Pending" để admin xác nhận
-            // KHÔNG thay đổi gì trong booking
-            // Chỉ lưu thông tin phương thức thanh toán (có thể lưu vào bảng Payments riêng nếu cần)
-            // Lý do: Admin cần kiểm tra bàn còn trống không, có đủ nguyên liệu không...
+            // BƯỚC 2: Tính tổng tiền cần thanh toán
+            const decimal DEPOSIT_FEE = 100000; // Phí cọc bắt buộc
+            decimal totalFoodAmount = booking.OrderItems?.Sum(oi => oi.Price * oi.Quantity) ?? 0;
+            decimal paymentAmount = 0;
 
-            // BƯỚC 3: Xóa bookingId khỏi session
+            // Xác định số tiền cần thanh toán dựa vào phương thức
+            if (paymentMethod == "cod_deposit")
+            {
+                // COD: Chỉ thanh toán cọc 100k ngay, số còn lại trả tại quầy
+                paymentAmount = DEPOSIT_FEE;
+            }
+            else if (paymentMethod == "ewallet" || paymentMethod == "bank_transfer")
+            {
+                // Ví điện tử/Chuyển khoản: Thanh toán FULL (cọc + món ăn)
+                paymentAmount = DEPOSIT_FEE + totalFoodAmount;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Phương thức thanh toán không hợp lệ.";
+                return RedirectToAction("Index", new { bookingId = bookingId });
+            }
+
+            // BƯỚC 3: Xử lý thanh toán theo phương thức
+            if (paymentMethod == "cod_deposit")
+            {
+                // TODO: Tích hợp VNPay để thanh toán cọc 100k
+                // Tạm thời giả lập thanh toán thành công
+                booking.Status = "Pending"; // Giữ nguyên status, chờ admin xác nhận
+
+                // Lưu thông tin thanh toán (có thể tạo bảng Payment riêng)
+                // _context.Payments.Add(new Payment { 
+                //     BookingId = bookingId, 
+                //     Amount = DEPOSIT_FEE, 
+                //     Method = "COD_DEPOSIT",
+                //     Status = "Paid" 
+                // });
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Thanh toán cọc 100,000đ thành công! Mã đặt bàn: #{bookingId}. Số tiền còn lại {totalFoodAmount:N0}đ sẽ thanh toán tại quầy.";
+            }
+            else
+            {
+                // Ví điện tử / Chuyển khoản: Redirect đến VNPay để thanh toán full
+                // TODO: Tích hợp VNPay API
+                TempData["SuccessMessage"] = $"Đang chuyển đến trang thanh toán {paymentAmount:N0}đ...";
+
+                // Giả lập thanh toán thành công
+                booking.Status = "Confirmed"; // Đã thanh toán full → tự động confirm
+                await _context.SaveChangesAsync();
+            }
+
+            // BƯỚC 4: Xóa bookingId khỏi session
             HttpContext.Session.Remove("CurrentBookingId");
-
-            // BƯỚC 4: Hiển thị thông báo thành công
-            TempData["SuccessMessage"] = $"Đặt bàn thành công! Mã đặt bàn: #{bookingId}. Phương thức thanh toán: {GetPaymentMethodName(paymentMethod)}. Đơn đặt bàn đang chờ xác nhận từ nhà hàng.";
 
             // BƯỚC 5: Redirect sang trang BookingSuccess
             return RedirectToAction("BookingSuccess", new { bookingId = booking.Id });
@@ -239,14 +283,15 @@ namespace QLNHWebApp.Controllers
         /// <summary>
         /// Helper method: Chuyển đổi payment method code thành tiếng Việt
         /// </summary>
-        /// <param name="method">Mã phương thức (restaurant/ewallet/bank_transfer)</param>
+        /// <param name="method">Mã phương thức (cod_deposit/ewallet/bank_transfer)</param>
         /// <returns>Tên phương thức tiếng Việt</returns>
         private string GetPaymentMethodName(string method)
         {
             // Switch expression (C# 8.0+) - ngắn gọn hơn switch statement
             return method switch
             {
-                "restaurant" => "Thanh toán tại nhà hàng",  // Tiền mặt khi đến nhà hàng
+                "cod_deposit" => "Đặt cọc giữ bàn (COD)",   // Cọc 100k ngay, còn lại trả sau
+                "restaurant" => "Thanh toán tại nhà hàng",  // Legacy - backward compatibility
                 "ewallet" => "Ví điện tử",                 // MoMo, ZaloPay, VNPay...
                 "bank_transfer" => "Chuyển khoản ngân hàng", // Chuyển khoản trực tiếp
                 _ => "Không xác định"                     // Default case (nếu không khớp case nào)

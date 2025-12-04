@@ -66,14 +66,18 @@ try
 
     builder.Services.AddAuthorization(options =>
     {
+        // Policy 1: Chỉ Admin (Quản lý nhân viên, Thống kê doanh thu, Cấu hình hệ thống)
         options.AddPolicy("AdminOnly", policy =>
             policy.RequireRole("Admin"));
 
+        // Policy 2: Admin + Staff (Đặt bàn, Gọi món, Xử lý order, Quản lý bàn)
+        // ĐÃ XÓA: "Đầu bếp" - Hệ thống chỉ còn 2 role: Admin và Staff
         options.AddPolicy("AdminAndStaff", policy =>
-            policy.RequireRole("Admin", "Nhân viên", "Đầu bếp"));
+            policy.RequireRole("Admin", "Staff", "Nhân viên")); // Support both "Staff" and legacy "Nhân viên"
 
+        // Policy 3: Tất cả roles (bao gồm Customer)
         options.AddPolicy("AllRoles", policy =>
-            policy.RequireRole("Admin", "Nhân viên", "Đầu bếp", "Customer"));
+            policy.RequireRole("Admin", "Staff", "Nhân viên", "Customer"));
     });
 
     // Add DataSeeder service

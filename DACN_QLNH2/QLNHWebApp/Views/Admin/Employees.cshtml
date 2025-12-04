@@ -68,27 +68,27 @@
                     </div>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-label">Nhân viên</div>
-                    <div class="stat-number">@Model.Count(e => e.Role == "Nhân viên")</div>
+                    <div class="stat-label">Nhân viên (Staff)</div>
+                    <div class="stat-number">@Model.Count(e => e.Role == "Staff" || e.Role == "Nhân viên")</div>
                     <div class="stat-badge">
-                        <span>Phục vụ</span>
+                        <span>Phục vụ & Quản lý</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6">
-            <div class="employee-stat-card stat-info">
+            <div class="employee-stat-card stat-warning">
                 <div class="stat-icon-wrapper">
                     <div class="stat-icon">
-                        <i class="bx bx-food-menu"></i>
+                        <i class="bx bx-check-circle"></i>
                     </div>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-label">Đầu bếp</div>
-                    <div class="stat-number">@Model.Count(e => e.Role == "Đầu bếp")</div>
+                    <div class="stat-label">Đang hoạt động</div>
+                    <div class="stat-number">@Model.Count(e => e.IsActive)</div>
                     <div class="stat-badge">
-                        <span>Chế biến</span>
+                        <span>Active</span>
                     </div>
                 </div>
             </div>
@@ -105,8 +105,8 @@
                             <i class="bx bx-search me-1"></i>Tìm kiếm
                         </label>
                         <div class="modern-input-wrapper">
-                            <input type="text" class="modern-input" id="searchInput" 
-                                   placeholder="Nhập tên, username hoặc email...">
+                            <input type="text" class="modern-input" id="searchInput"
+                                placeholder="Nhập tên, username hoặc email...">
                             <i class="bx bx-search input-icon"></i>
                         </div>
                     </div>
@@ -117,8 +117,7 @@
                         <select class="modern-select" id="roleFilter">
                             <option value="">Tất cả vai trò</option>
                             <option value="Admin">👑 Admin</option>
-                            <option value="Nhân viên">🍽️ Nhân viên</option>
-                            <option value="Đầu bếp">👨‍🍳 Đầu bếp</option>
+                            <option value="Staff">🍽️ Staff (Nhân viên)</option>
                         </select>
                     </div>
                     <div class="col-lg-4 col-md-12">
@@ -192,7 +191,7 @@
                                                     "Đầu bếp" => "role-chef",
                                                     _ => "role-default"
                                                 };
-                                                
+
                                                 string roleIcon = employee.Role switch
                                                 {
                                                     "Admin" => "bx-shield",
@@ -227,21 +226,23 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="action-buttons">
-                                                <button type="button" class="action-btn action-view" 
-                                                        onclick="viewEmployee(@employee.Id)" 
-                                                        title="Xem chi tiết">
+                                                <button type="button" class="action-btn action-view"
+                                                    onclick="viewEmployee(@employee.Id)" title="Xem chi tiết">
                                                     <i class="bx bx-show"></i>
                                                 </button>
-                                                <button type="button" class="action-btn action-edit" 
-                                                        onclick="editEmployee(@employee.Id)"
-                                                        title="Chỉnh sửa">
+                                                <button type="button" class="action-btn action-edit"
+                                                    onclick="editEmployee(@employee.Id)" title="Chỉnh sửa">
                                                     <i class="bx bx-edit"></i>
+                                                </button>
+                                                <button type="button" class="action-btn action-password"
+                                                    onclick="showResetPasswordModal(@employee.Id, '@employee.FullName')"
+                                                    title="Đổi mật khẩu">
+                                                    <i class="bx bx-key"></i>
                                                 </button>
                                                 @if (employee.Username != "admin")
                                                 {
-                                                    <button type="button" class="action-btn action-delete" 
-                                                            onclick="deleteEmployee(@employee.Id, '@employee.FullName')"
-                                                            title="Xóa">
+                                                    <button type="button" class="action-btn action-delete"
+                                                        onclick="deleteEmployee(@employee.Id, '@employee.FullName')" title="Xóa">
                                                         <i class="bx bx-trash"></i>
                                                     </button>
                                                 }
@@ -291,22 +292,19 @@
                             <label for="fullName" class="modern-label">
                                 Họ và tên <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="modern-input" id="fullName" required 
-                                   placeholder="Nhập họ và tên">
+                            <input type="text" class="modern-input" id="fullName" required placeholder="Nhập họ và tên">
                         </div>
                         <div class="col-md-6">
                             <label for="username" class="modern-label">
                                 Username <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="modern-input" id="username" required
-                                   placeholder="Nhập username">
+                            <input type="text" class="modern-input" id="username" required placeholder="Nhập username">
                         </div>
                         <div class="col-md-6">
                             <label for="email" class="modern-label">
                                 Email <span class="text-danger">*</span>
                             </label>
-                            <input type="email" class="modern-input" id="email" required
-                                   placeholder="Nhập email">
+                            <input type="email" class="modern-input" id="email" required placeholder="Nhập email">
                         </div>
                         <div class="col-md-6">
                             <label for="role" class="modern-label">
@@ -314,10 +312,13 @@
                             </label>
                             <select class="modern-select" id="role" required>
                                 <option value="">Chọn vai trò</option>
-                                <option value="Admin">👑 Admin - Toàn quyền</option>
-                                <option value="Nhân viên">🍽️ Nhân viên - Phục vụ & Quản lý</option>
-                                <option value="Đầu bếp">👨‍🍳 Đầu bếp - Chế biến món ăn</option>
+                                <option value="Admin">👑 Admin - Toàn quyền hệ thống</option>
+                                <option value="Staff">🍽️ Staff - Nhân viên phục vụ</option>
                             </select>
+                            <small class="text-muted">
+                                <i class="bx bx-info-circle"></i> Chỉ còn 2 role: Admin (toàn quyền) và Staff (nhân
+                                viên)
+                            </small>
                         </div>
                         <div class="col-md-6" id="passwordGroup">
                             <label for="password" class="modern-label">
@@ -325,7 +326,7 @@
                             </label>
                             <div class="password-input-wrapper">
                                 <input type="password" class="modern-input" id="password" required
-                                       placeholder="Tối thiểu 6 ký tự">
+                                    placeholder="Tối thiểu 6 ký tự">
                                 <button type="button" class="password-toggle-btn" onclick="togglePassword()">
                                     <i class="bx bx-show" id="passwordIcon"></i>
                                 </button>
@@ -336,7 +337,7 @@
                                 Xác nhận mật khẩu <span class="text-danger">*</span>
                             </label>
                             <input type="password" class="modern-input" id="confirmPassword" required
-                                   placeholder="Nhập lại mật khẩu">
+                                placeholder="Nhập lại mật khẩu">
                         </div>
                     </div>
                 </form>
@@ -372,35 +373,100 @@
     </div>
 </div>
 
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modern-modal">
+            <div class="modal-header modern-modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="bx bx-key me-2"></i>Đổi mật khẩu nhân viên
+                </h5>
+                <button type="button" class="btn-close-modern" data-bs-dismiss="modal">
+                    <i class="bx bx-x"></i>
+                </button>
+            </div>
+            <div class="modal-body modern-modal-body">
+                <div class="alert alert-warning mb-3">
+                    <i class="bx bx-info-circle me-2"></i>
+                    <strong>Lưu ý:</strong> Bạn đang đặt lại mật khẩu cho nhân viên <strong
+                        id="resetEmployeeName"></strong>.
+                    Mật khẩu cũ sẽ bị vô hiệu hóa ngay lập tức.
+                </div>
+                <form id="resetPasswordForm">
+                    <input type="hidden" id="resetEmployeeId" value="0">
+
+                    <div class="mb-3">
+                        <label for="newPassword" class="modern-label">
+                            Mật khẩu mới <span class="text-danger">*</span>
+                        </label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="modern-input" id="newPassword" required
+                                placeholder="Tối thiểu 6 ký tự" minlength="6">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordReset()">
+                                <i class="bx bx-show" id="newPasswordIcon"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">
+                            <i class="bx bx-shield me-1"></i>Mật khẩu nên có ít nhất 6 ký tự, bao gồm chữ và số
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirmNewPassword" class="modern-label">
+                            Xác nhận mật khẩu mới <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" class="modern-input" id="confirmNewPassword" required
+                            placeholder="Nhập lại mật khẩu mới">
+                    </div>
+
+                    <div class="alert alert-info mb-0">
+                        <i class="bx bx-bulb me-2"></i>
+                        <strong>Gợi ý:</strong> Sau khi đổi, hãy thông báo mật khẩu mới cho nhân viên và yêu cầu họ đổi
+                        lại sau lần đăng nhập đầu tiên.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer modern-modal-footer">
+                <button type="button" class="btn-cancel-modal" data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn-save-modal btn-warning" onclick="resetEmployeePassword()">
+                    <i class="bx bx-key me-1"></i>Đặt lại mật khẩu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         // Filter employees
         function filterEmployees() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const roleFilter = document.getElementById('roleFilter').value;
-            
+
             const rows = document.querySelectorAll('#employeesTable tbody tr');
             let visibleCount = 0;
-            
+
             rows.forEach(row => {
                 const employeeInfo = row.querySelector('.employee-details').textContent.toLowerCase();
                 const username = row.querySelector('.username-badge').textContent.toLowerCase();
                 const role = row.querySelector('.role-badge span').textContent;
-                
+
                 let show = true;
-                
+
                 if (searchTerm && !employeeInfo.includes(searchTerm) && !username.includes(searchTerm)) {
                     show = false;
                 }
-                
+
                 if (roleFilter && !role.includes(roleFilter)) {
                     show = false;
                 }
-                
+
                 row.style.display = show ? '' : 'none';
                 if (show) visibleCount++;
             });
-            
+
             updateVisibleCount(visibleCount);
         }
 
@@ -408,10 +474,10 @@
         function resetFilters() {
             document.getElementById('searchInput').value = '';
             document.getElementById('roleFilter').value = '';
-            
+
             const rows = document.querySelectorAll('#employeesTable tbody tr');
             rows.forEach(row => row.style.display = '');
-            
+
             updateVisibleCount(rows.length);
         }
 
@@ -431,7 +497,7 @@
             document.getElementById('confirmPasswordGroup').style.display = 'block';
             document.getElementById('password').required = true;
             document.getElementById('confirmPassword').required = true;
-            
+
             const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
             modal.show();
         }
@@ -441,7 +507,7 @@
             try {
                 const response = await fetch(`/Admin/GetEmployee?id=${employeeId}`);
                 const employee = await response.json();
-                
+
                 if (!employee) {
                     showNotification('Không tìm thấy thông tin nhân viên', 'error');
                     return;
@@ -456,42 +522,42 @@
                 const roleClass = roleClasses[employee.role] || 'bg-secondary';
 
                 document.getElementById('employeeDetailContent').innerHTML = `
-                    <div class="employee-detail-view">
-                        <div class="employee-detail-avatar">
-                            <i class="bx bx-user"></i>
-                        </div>
-                        <h5 class="employee-detail-name">${employee.fullName}</h5>
-                        <div class="employee-detail-grid">
-                            <div class="detail-item">
-                                <div class="detail-label">Username</div>
-                                <div class="detail-value">${employee.username}</div>
+                        <div class="employee-detail-view">
+                            <div class="employee-detail-avatar">
+                                <i class="bx bx-user"></i>
                             </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Email</div>
-                                <div class="detail-value">${employee.email}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Vai trò</div>
-                                <div class="detail-value">
-                                    <span class="badge ${roleClass}">${employee.role}</span>
+                            <h5 class="employee-detail-name">${employee.fullName}</h5>
+                            <div class="employee-detail-grid">
+                                <div class="detail-item">
+                                    <div class="detail-label">Username</div>
+                                    <div class="detail-value">${employee.username}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Email</div>
+                                    <div class="detail-value">${employee.email}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Vai trò</div>
+                                    <div class="detail-value">
+                                        <span class="badge ${roleClass}">${employee.role}</span>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Trạng thái</div>
+                                    <div class="detail-value">
+                                        <span class="badge ${employee.isActive ? 'bg-success' : 'bg-secondary'}">
+                                            ${employee.isActive ? 'Hoạt động' : 'Ngưng hoạt động'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="detail-item detail-full">
+                                    <div class="detail-label">Ngày tạo</div>
+                                    <div class="detail-value">${employee.createdAt}</div>
                                 </div>
                             </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Trạng thái</div>
-                                <div class="detail-value">
-                                    <span class="badge ${employee.isActive ? 'bg-success' : 'bg-secondary'}">
-                                        ${employee.isActive ? 'Hoạt động' : 'Ngưng hoạt động'}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="detail-item detail-full">
-                                <div class="detail-label">Ngày tạo</div>
-                                <div class="detail-value">${employee.createdAt}</div>
-                            </div>
                         </div>
-                    </div>
-                `;
-                
+                    `;
+
                 const modal = new bootstrap.Modal(document.getElementById('viewEmployeeModal'));
                 modal.show();
             } catch (error) {
@@ -505,7 +571,7 @@
             try {
                 const response = await fetch(`/Admin/GetEmployee?id=${employeeId}`);
                 const employee = await response.json();
-                
+
                 if (!employee) {
                     showNotification('Không tìm thấy thông tin nhân viên', 'error');
                     return;
@@ -517,13 +583,13 @@
                 document.getElementById('confirmPasswordGroup').style.display = 'none';
                 document.getElementById('password').required = false;
                 document.getElementById('confirmPassword').required = false;
-                
+
                 // Load employee data
                 document.getElementById('fullName').value = employee.fullName;
                 document.getElementById('username').value = employee.username;
                 document.getElementById('email').value = employee.email;
                 document.getElementById('role').value = employee.role;
-                
+
                 const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
                 modal.show();
             } catch (error) {
@@ -553,7 +619,7 @@
 
                 if (result.success) {
                     showNotification(result.message, 'success');
-                    
+
                     // Remove row with animation
                     const row = document.querySelector(`tr[data-employee-id="${employeeId}"]`);
                     if (row) {
@@ -577,36 +643,36 @@
             const form = document.getElementById('employeeForm');
             const employeeId = document.getElementById('employeeId').value;
             const isEditing = employeeId !== '0';
-            
+
             // Basic validation
             if (!form.checkValidity()) {
                 form.classList.add('was-validated');
                 return;
             }
-            
+
             // Password validation for new employee
             if (!isEditing) {
                 const password = document.getElementById('password').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
-                
+
                 if (password.length < 6) {
                     showNotification('Mật khẩu phải có ít nhất 6 ký tự', 'warning');
                     return;
                 }
-                
+
                 if (password !== confirmPassword) {
                     showNotification('Xác nhận mật khẩu không khớp', 'warning');
                     return;
                 }
             }
-            
+
             // Prepare form data
             const formData = new FormData();
             formData.append('fullName', document.getElementById('fullName').value);
             formData.append('username', document.getElementById('username').value);
             formData.append('email', document.getElementById('email').value);
             formData.append('role', document.getElementById('role').value);
-            
+
             if (isEditing) {
                 formData.append('id', employeeId);
             } else {
@@ -616,7 +682,7 @@
             // Add CSRF token
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
             formData.append('__RequestVerificationToken', token);
-            
+
             try {
                 const url = isEditing ? '/Admin/UpdateEmployee' : '/Admin/CreateEmployee';
                 const response = await fetch(url, {
@@ -628,11 +694,11 @@
 
                 if (result.success) {
                     showNotification(result.message, 'success');
-                    
+
                     // Close modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('employeeModal'));
                     modal.hide();
-                    
+
                     // Reload page after short delay
                     setTimeout(() => location.reload(), 1000);
                 } else {
@@ -648,7 +714,7 @@
         function togglePassword() {
             const passwordField = document.getElementById('password');
             const passwordIcon = document.getElementById('passwordIcon');
-            
+
             if (passwordField.type === 'password') {
                 passwordField.type = 'text';
                 passwordIcon.className = 'bx bx-hide';
@@ -658,19 +724,99 @@
             }
         }
 
+        // Toggle password visibility for Reset Password modal
+        function togglePasswordReset() {
+            const passwordField = document.getElementById('newPassword');
+            const passwordIcon = document.getElementById('newPasswordIcon');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                passwordIcon.className = 'bx bx-hide';
+            } else {
+                passwordField.type = 'password';
+                passwordIcon.className = 'bx bx-show';
+            }
+        }
+
+        // Show Reset Password Modal
+        function showResetPasswordModal(employeeId, employeeName) {
+            document.getElementById('resetEmployeeId').value = employeeId;
+            document.getElementById('resetEmployeeName').textContent = employeeName;
+            document.getElementById('resetPasswordForm').reset();
+
+            const modal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
+            modal.show();
+        }
+
+        // Reset Employee Password (Admin Force Reset)
+        async function resetEmployeePassword() {
+            const employeeId = document.getElementById('resetEmployeeId').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            // Validation
+            if (!newPassword || newPassword.length < 6) {
+                showNotification('Mật khẩu phải có ít nhất 6 ký tự', 'warning');
+                return;
+            }
+
+            if (newPassword !== confirmNewPassword) {
+                showNotification('Xác nhận mật khẩu không khớp', 'warning');
+                return;
+            }
+
+            if (!confirm(`Bạn có chắc muốn đặt lại mật khẩu cho nhân viên này?\nMật khẩu cũ sẽ bị vô hiệu hóa ngay lập tức.`)) {
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('id', employeeId);
+                formData.append('newPassword', newPassword);
+
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                formData.append('__RequestVerificationToken', token);
+
+                const response = await fetch('/Admin/ResetPassword', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(result.message, 'success');
+
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal'));
+                    modal.hide();
+
+                    // Show password in alert for admin to copy
+                    setTimeout(() => {
+                        alert(`✅ Mật khẩu đã được đặt lại thành công!\n\nMật khẩu mới: ${newPassword}\n\nHãy thông báo cho nhân viên và yêu cầu họ đổi lại sau lần đăng nhập đầu tiên.`);
+                    }, 500);
+                } else {
+                    showNotification(result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Lỗi khi đặt lại mật khẩu', 'danger');
+            }
+        }
+
         // Show notification
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.className = `modern-notification notification-${type}`;
             notification.innerHTML = `
-                <i class="bx ${type === 'success' ? 'bx-check-circle' : type === 'danger' ? 'bx-error' : 'bx-info-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
+                    <i class="bx ${type === 'success' ? 'bx-check-circle' : type === 'danger' ? 'bx-error' : 'bx-info-circle'}"></i>
+                    <span>${message}</span>
+                `;
+
             document.body.appendChild(notification);
-            
+
             setTimeout(() => notification.classList.add('show'), 100);
-            
+
             setTimeout(() => {
                 notification.classList.remove('show');
                 setTimeout(() => notification.remove(), 300);
@@ -767,10 +913,21 @@
             transition: width 0.3s ease;
         }
 
-        .stat-primary::before { background: linear-gradient(to bottom, #667eea, #764ba2); }
-        .stat-danger::before { background: linear-gradient(to bottom, #ef4444, #dc2626); }
-        .stat-success::before { background: linear-gradient(to bottom, #10b981, #059669); }
-        .stat-info::before { background: linear-gradient(to bottom, #3b82f6, #2563eb); }
+        .stat-primary::before {
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+        }
+
+        .stat-danger::before {
+            background: linear-gradient(to bottom, #ef4444, #dc2626);
+        }
+
+        .stat-success::before {
+            background: linear-gradient(to bottom, #10b981, #059669);
+        }
+
+        .stat-info::before {
+            background: linear-gradient(to bottom, #3b82f6, #2563eb);
+        }
 
         .employee-stat-card:hover {
             transform: translateY(-5px);
@@ -796,10 +953,25 @@
             font-size: 1.75rem;
         }
 
-        .stat-primary .stat-icon { background: linear-gradient(135deg, #667eea15, #764ba215); color: #667eea; }
-        .stat-danger .stat-icon { background: linear-gradient(135deg, #ef444415, #dc262615); color: #ef4444; }
-        .stat-success .stat-icon { background: linear-gradient(135deg, #10b98115, #05966915); color: #10b981; }
-        .stat-info .stat-icon { background: linear-gradient(135deg, #3b82f615, #2563eb15); color: #3b82f6; }
+        .stat-primary .stat-icon {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            color: #667eea;
+        }
+
+        .stat-danger .stat-icon {
+            background: linear-gradient(135deg, #ef444415, #dc262615);
+            color: #ef4444;
+        }
+
+        .stat-success .stat-icon {
+            background: linear-gradient(135deg, #10b98115, #05966915);
+            color: #10b981;
+        }
+
+        .stat-info .stat-icon {
+            background: linear-gradient(135deg, #3b82f615, #2563eb15);
+            color: #3b82f6;
+        }
 
         .stat-info {
             flex-grow: 1;
@@ -902,7 +1074,8 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .btn-filter, .btn-reset {
+        .btn-filter,
+        .btn-reset {
             padding: 0.75rem 1.25rem;
             border-radius: 12px;
             font-weight: 600;
@@ -1146,6 +1319,18 @@
             transform: translateY(-2px);
         }
 
+        .action-password {
+            color: #f59e0b;
+            border-color: #f59e0b30;
+        }
+
+        .action-password:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
         /* Modern Modal */
         .modern-modal .modal-content {
             border-radius: 20px;
@@ -1219,7 +1404,8 @@
             justify-content: flex-end;
         }
 
-        .btn-cancel-modal, .btn-save-modal {
+        .btn-cancel-modal,
+        .btn-save-modal {
             padding: 0.75rem 1.5rem;
             border-radius: 12px;
             font-weight: 600;
@@ -1407,17 +1593,19 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        .employee-stat-card, .search-filter-card, .employees-table-card {
+        .employee-stat-card,
+        .search-filter-card,
+        .employees-table-card {
             animation: fadeInUp 0.5s ease-out;
         }
     </style>
 }
 
 @Html.AntiForgeryToken()
-

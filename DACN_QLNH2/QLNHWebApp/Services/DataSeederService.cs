@@ -19,36 +19,27 @@ namespace QLNHWebApp.Services
             {
                 var employees = new[]
                 {
-                    new Employee 
-                    { 
-                        FullName = "Admin Hệ Thống", 
-                        Username = "admin", 
+                    new Employee
+                    {
+                        FullName = "Admin Hệ Thống",
+                        Username = "admin",
                         Email = "admin@restaurant.com",
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), 
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
                         Role = "Admin",
                         CreatedAt = DateTime.Now,
                         IsActive = true
                     },
-                    new Employee 
-                    { 
-                        FullName = "Nguyễn Văn A", 
-                        Username = "nhanvien", 
+                    new Employee
+                    {
+                        FullName = "Nguyễn Văn A",
+                        Username = "nhanvien",
                         Email = "nhanvien@restaurant.com",
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"), 
-                        Role = "Nhân viên",
-                        CreatedAt = DateTime.Now,
-                        IsActive = true
-                    },
-                    new Employee 
-                    { 
-                        FullName = "Trần Thị B", 
-                        Username = "daubep", 
-                        Email = "daubep@restaurant.com",
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"), 
-                        Role = "Đầu bếp",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        Role = "Staff",
                         CreatedAt = DateTime.Now,
                         IsActive = true
                     }
+                    // ĐÃ XÓA: Role "Đầu bếp" - Hệ thống chỉ còn Admin và Staff
                 };
 
                 _context.Employees.AddRange(employees);
@@ -129,52 +120,52 @@ namespace QLNHWebApp.Services
             {
                 var menuItems = new[]
                 {
-                    new MenuItem 
-                    { 
-                        Name = "Gỏi cuốn", 
-                        Description = "Gỏi cuốn tôm thịt tươi ngon", 
-                        Price = 35000, 
-                        Category = "Khai vị", 
+                    new MenuItem
+                    {
+                        Name = "Gỏi cuốn",
+                        Description = "Gỏi cuốn tôm thịt tươi ngon",
+                        Price = 35000,
+                        Category = "Khai vị",
                         ImageUrl = "/images/goicuon.jpg"
                     },
-                    new MenuItem 
-                    { 
-                        Name = "Bò lúc lắc", 
-                        Description = "Bò lúc lắc hạt điều thơm ngon", 
-                        Price = 95000, 
-                        Category = "Món chính", 
+                    new MenuItem
+                    {
+                        Name = "Bò lúc lắc",
+                        Description = "Bò lúc lắc hạt điều thơm ngon",
+                        Price = 95000,
+                        Category = "Món chính",
                         ImageUrl = "/images/boluclac.jpg"
                     },
-                    new MenuItem 
-                    { 
-                        Name = "Sườn nướng", 
-                        Description = "Sườn nướng BBQ đặc biệt", 
-                        Price = 120000, 
-                        Category = "Món chính", 
+                    new MenuItem
+                    {
+                        Name = "Sườn nướng",
+                        Description = "Sườn nướng BBQ đặc biệt",
+                        Price = 120000,
+                        Category = "Món chính",
                         ImageUrl = "/images/suonnuong.jpg"
                     },
-                    new MenuItem 
-                    { 
-                        Name = "Lẩu Thái", 
-                        Description = "Lẩu Thái hải sản chua cay", 
-                        Price = 250000, 
-                        Category = "Món chính", 
+                    new MenuItem
+                    {
+                        Name = "Lẩu Thái",
+                        Description = "Lẩu Thái hải sản chua cay",
+                        Price = 250000,
+                        Category = "Món chính",
                         ImageUrl = "/images/lautai.jpg"
                     },
-                    new MenuItem 
-                    { 
-                        Name = "Chè khúc bạch", 
-                        Description = "Chè khúc bạch mát lạnh", 
-                        Price = 25000, 
-                        Category = "Tráng miệng", 
+                    new MenuItem
+                    {
+                        Name = "Chè khúc bạch",
+                        Description = "Chè khúc bạch mát lạnh",
+                        Price = 25000,
+                        Category = "Tráng miệng",
                         ImageUrl = "/images/chekhucbach.jpg"
                     },
-                    new MenuItem 
-                    { 
-                        Name = "Trà đào", 
-                        Description = "Trà đào cam sả tươi mát", 
-                        Price = 40000, 
-                        Category = "Đồ uống", 
+                    new MenuItem
+                    {
+                        Name = "Trà đào",
+                        Description = "Trà đào cam sả tươi mát",
+                        Price = 40000,
+                        Category = "Đồ uống",
                         ImageUrl = "/images/tradao.jpg"
                     }
                 };
@@ -235,7 +226,7 @@ namespace QLNHWebApp.Services
 
                     _context.Orders.AddRange(demoOrders);
                     await _context.SaveChangesAsync();
-                    
+
                     Console.WriteLine($"✅ Đã seed {demoOrders.Count} đơn hàng demo có trạng thái 'Đã thanh toán'");
                 }
             }

@@ -18,38 +18,99 @@ namespace QLNHWebApp.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
-            // Basic Statistics
-            var totalOrders = await _context.Orders.CountAsync();
-            var totalRevenue = await _context.Orders
-                .Where(o => o.Status == "Đã thanh toán")
-                .SumAsync(o => o.TotalPrice);
-            var totalCustomers = await _context.Orders
-                .Where(o => !string.IsNullOrEmpty(o.CustomerName))
-                .Select(o => o.Phone) // Use phone as unique identifier
-                .Distinct()
+            var viewModel = new DashboardViewModel();
+
+            // === USER INFO ===
+            viewModel.UserRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            viewModel.FullName = User.FindFirst("FullName")?.Value;
+
+            // === KPI CARDS ===
+
+            // 1. ĐƠN HÀNG THÁNG NÀY (FIX: đổi từ "Tổng đơn hàng" sang "Đơn hàng tháng này")
+            var now = DateTime.Now;
+            var currentMonthStart = new DateTime(now.Year, now.Month, 1);
+            var nextMonthStart = currentMonthStart.AddMonths(1);
+
+            // Đếm đơn hàng tháng hiện tại
+            viewModel.OrdersThisMonth = await _context.Orders
+                .Where(o => o.Date >= currentMonthStart && o.Date < nextMonthStart)
                 .CountAsync();
 
-            ViewBag.TotalOrders = totalOrders;
-            ViewBag.TotalRevenue = totalRevenue;
-            ViewBag.TotalCustomers = totalCustomers;
-            ViewBag.UserRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-            ViewBag.FullName = User.FindFirst("FullName")?.Value;
+            // Đếm đơn hàng tháng trước (để tính %)
+            var lastMonthStart = currentMonthStart.AddMonths(-1);
+            viewModel.OrdersLastMonth = await _context.Orders
+                .Where(o => o.Date >= lastMonthStart && o.Date < currentMonthStart)
+                .CountAsync();
 
-            // === DATA FOR CHARTS ===
-
-            // 1. Revenue by Month (Last 6 months) - IMPROVED LOGIC
-            // Tạo danh sách đầy đủ 6 tháng gần nhất (kể cả tháng có doanh thu = 0)
-            var last6Months = new List<(int Year, int Month, string Label)>();
-            for (int i = 5; i >= 0; i--)
+            // Tính % tăng trưởng đơn hàng
+            if (viewModel.OrdersLastMonth > 0)
             {
-                var date = DateTime.Now.AddMonths(-i);
-                last6Months.Add((date.Year, date.Month, $"Tháng {date.Month}/{date.Year}"));
+                viewModel.OrdersGrowthRate = ((decimal)(viewModel.OrdersThisMonth - viewModel.OrdersLastMonth)
+                    / viewModel.OrdersLastMonth) * 100;
+            }
+            else
+            {
+                viewModel.OrdersGrowthRate = viewModel.OrdersThisMonth > 0 ? 100 : 0;
             }
 
-            // Lấy doanh thu thực tế từ database
-            var sixMonthsAgo = DateTime.Now.AddMonths(-6);
+            // 2. Tổng doanh thu (ALL TIME) - chỉ tính đơn "Đã thanh toán"
+            viewModel.TotalRevenue = await _context.Orders
+                .Where(o => o.Status == "Đã thanh toán")
+                .SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
+
+            // 3. DOANH THU THÁNG NÀY (THAY CARD "Tổng khách hàng")
+            // Doanh thu tháng hiện tại
+            viewModel.CurrentMonthRevenue = await _context.Orders
+                .Where(o => o.Status == "Đã thanh toán"
+                    && o.Date >= currentMonthStart
+                    && o.Date < nextMonthStart)
+                .SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
+
+            // Doanh thu tháng trước
+            viewModel.LastMonthRevenue = await _context.Orders
+                .Where(o => o.Status == "Đã thanh toán"
+                    && o.Date >= lastMonthStart
+                    && o.Date < currentMonthStart)
+                .SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
+
+            // Tính % tăng trưởng (Growth Rate)
+            if (viewModel.LastMonthRevenue > 0)
+            {
+                viewModel.MonthlyGrowthRate = ((viewModel.CurrentMonthRevenue - viewModel.LastMonthRevenue)
+                    / viewModel.LastMonthRevenue) * 100;
+            }
+            else
+            {
+                // Nếu tháng trước = 0, xử lý đặc biệt
+                viewModel.MonthlyGrowthRate = viewModel.CurrentMonthRevenue > 0 ? 100 : 0;
+            }
+
+            // 4. DOANH THU HÔM NAY (FIX: so sánh .Date để tránh lỗi DateTime)
+            var today = DateTime.Today;
+
+            // FIX: Sử dụng .Date.Date để so sánh chỉ phần ngày (loại bỏ giờ/phút/giây)
+            viewModel.TodayRevenue = await _context.Orders
+                .Where(o => o.Date.Date == today && o.Status == "Đã thanh toán")
+                .SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
+
+            viewModel.TodayOrders = await _context.Orders
+                .Where(o => o.Date.Date == today)
+                .CountAsync();
+
+            // === REVENUE CHART DATA (12 tháng gần nhất - FIX LOGIC) ===
+
+            // Tạo danh sách đầy đủ 12 tháng gần nhất
+            var last12Months = new List<(int Year, int Month, string Label)>();
+            for (int i = 11; i >= 0; i--)
+            {
+                var date = DateTime.Now.AddMonths(-i);
+                last12Months.Add((date.Year, date.Month, $"Tháng {date.Month}/{date.Year}"));
+            }
+
+            // Lấy doanh thu THỰC TẾ từ database (CHỈ ĐƠN "ĐÃ THANH TOÁN")
+            var twelveMonthsAgo = DateTime.Now.AddMonths(-12);
             var actualRevenue = await _context.Orders
-                .Where(o => o.Status == "Đã thanh toán" && o.Date >= sixMonthsAgo)
+                .Where(o => o.Status == "Đã thanh toán" && o.Date >= twelveMonthsAgo)
                 .GroupBy(o => new { o.Date.Year, o.Date.Month })
                 .Select(g => new
                 {
@@ -60,42 +121,35 @@ namespace QLNHWebApp.Controllers
                 })
                 .ToListAsync();
 
-            // Merge data: Tạo array đầy đủ 6 tháng, tháng nào không có dữ liệu = 0
-            var revenueLabels = new List<string>();
-            var revenueData = new List<decimal>();
-            var orderCountData = new List<int>();
-
-            foreach (var month in last6Months)
+            // DATA FILLING: Merge data để đảm bảo có đủ 12 phần tử
+            foreach (var month in last12Months)
             {
-                revenueLabels.Add($"\"{month.Label}\"");
+                viewModel.RevenueLabels.Add(month.Label);
 
                 var data = actualRevenue.FirstOrDefault(r => r.Year == month.Year && r.Month == month.Month);
                 if (data != null)
                 {
-                    revenueData.Add(data.Revenue);
-                    orderCountData.Add(data.OrderCount);
+                    viewModel.RevenueData.Add(data.Revenue);
+                    viewModel.OrderCountData.Add(data.OrderCount);
                 }
                 else
                 {
-                    revenueData.Add(0);
-                    orderCountData.Add(0);
+                    // Tháng không có dữ liệu = 0 (KHÔNG BỎ QUA)
+                    viewModel.RevenueData.Add(0);
+                    viewModel.OrderCountData.Add(0);
                 }
             }
 
-            ViewBag.RevenueLabels = string.Join(",", revenueLabels);
-            ViewBag.RevenueData = string.Join(",", revenueData);
-            ViewBag.OrderCountData = string.Join(",", orderCountData);
-
-            // 2. Orders by Status (Pie Chart)
+            // === ORDER STATUS DATA (Pie Chart) ===
             var ordersByStatus = await _context.Orders
                 .GroupBy(o => o.Status)
                 .Select(g => new { Status = g.Key, Count = g.Count() })
                 .ToListAsync();
 
-            ViewBag.StatusLabels = string.Join(",", ordersByStatus.Select(s => $"\"{s.Status}\""));
-            ViewBag.StatusData = string.Join(",", ordersByStatus.Select(s => s.Count));
+            viewModel.StatusLabels = ordersByStatus.Select(s => s.Status).ToList();
+            viewModel.StatusData = ordersByStatus.Select(s => s.Count).ToList();
 
-            // 3. Top 5 Menu Items (Bar Chart)
+            // === TOP MENU ITEMS DATA (Bar Chart) ===
             var topMenuItems = await _context.OrderItems
                 .GroupBy(oi => oi.MenuItemId)
                 .Select(g => new
@@ -108,28 +162,15 @@ namespace QLNHWebApp.Controllers
                 .Take(5)
                 .ToListAsync();
 
-            var menuItemNames = new List<string>();
             foreach (var item in topMenuItems)
             {
                 var menuItem = await _context.MenuItems.FindAsync(item.MenuItemId);
-                menuItemNames.Add(menuItem?.Name ?? "Unknown");
+                viewModel.TopMenuLabels.Add(menuItem?.Name ?? "Unknown");
+                viewModel.TopMenuQuantities.Add(item.TotalQuantity);
+                viewModel.TopMenuRevenue.Add(item.TotalRevenue);
             }
 
-            ViewBag.TopMenuLabels = string.Join(",", menuItemNames.Select(name => $"\"{name}\""));
-            ViewBag.TopMenuQuantities = string.Join(",", topMenuItems.Select(x => x.TotalQuantity));
-            ViewBag.TopMenuRevenue = string.Join(",", topMenuItems.Select(x => x.TotalRevenue));
-
-            // 4. Today's stats
-            var today = DateTime.Today;
-            var todayOrders = await _context.Orders.Where(o => o.Date == today).CountAsync();
-            var todayRevenue = await _context.Orders
-                .Where(o => o.Date == today && o.Status == "Đã thanh toán")
-                .SumAsync(o => o.TotalPrice);
-
-            ViewBag.TodayOrders = todayOrders;
-            ViewBag.TodayRevenue = todayRevenue;
-
-            return View();
+            return View(viewModel);
         }
 
         public async Task<IActionResult> Orders()
@@ -342,6 +383,56 @@ namespace QLNHWebApp.Controllers
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Đã xóa nhân viên thành công" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// API: Reset Password - Admin đổi mật khẩu cho nhân viên (Force Reset)
+        /// Admin có toàn quyền đổi mật khẩu mà không cần biết mật khẩu cũ
+        /// </summary>
+        /// <param name="id">ID nhân viên</param>
+        /// <param name="newPassword">Mật khẩu mới</param>
+        /// <returns>JSON kết quả</returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(int id, [FromForm] string newPassword)
+        {
+            try
+            {
+                // Validate input
+                if (string.IsNullOrWhiteSpace(newPassword))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập mật khẩu mới" });
+                }
+
+                if (newPassword.Length < 6)
+                {
+                    return Json(new { success = false, message = "Mật khẩu phải có ít nhất 6 ký tự" });
+                }
+
+                // Find employee
+                var employee = await _context.Employees.FindAsync(id);
+                if (employee == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy nhân viên" });
+                }
+
+                // Force reset password (không cần mật khẩu cũ)
+                // Hash mật khẩu mới bằng BCrypt
+                employee.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+                // Save changes
+                await _context.SaveChangesAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Đã đặt lại mật khẩu cho nhân viên '{employee.FullName}' thành công. Mật khẩu mới: {newPassword}"
+                });
             }
             catch (Exception ex)
             {

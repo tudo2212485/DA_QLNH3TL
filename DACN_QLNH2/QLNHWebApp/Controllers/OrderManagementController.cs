@@ -27,11 +27,22 @@ namespace QLNHWebApp.Controllers
                 .OrderByDescending(o => o.Id)
                 .ToListAsync();
 
-            // Set ViewBag statistics
+            // === FIX: THỐNG KÊ ĐÚNG LOGIC ===
+
+            // Card 1: TỔNG ĐƠN HÀNG (đang xử lý - không tính đã thanh toán/đã hủy)
             ViewBag.TotalOrders = activeOrders.Count;
+
+            // Card 2: CHỜ THANH TOÁN (đơn đã phục vụ xong chưa thanh toán)
             ViewBag.PendingPayment = activeOrders.Count(o => o.Status == "Chưa thanh toán");
+
+            // Card 3: ĐANG PHỤC VỤ (đơn đang được bếp/nhân viên xử lý)
             ViewBag.ServingOrders = activeOrders.Count(o => o.Status == "Đang phục vụ");
-            ViewBag.TotalRevenue = activeOrders.Sum(o => o.TotalPrice);
+
+            // Card 4: TỔNG DOANH THU HÔM NAY (FIX - chỉ tính đơn "Đã thanh toán" hôm nay)
+            var today = DateTime.Today;
+            ViewBag.TotalRevenue = await _context.Orders
+                .Where(o => o.Date.Date == today && o.Status == "Đã thanh toán")
+                .SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
 
             return View(activeOrders);
         }
